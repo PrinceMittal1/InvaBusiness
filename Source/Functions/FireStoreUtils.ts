@@ -1,7 +1,9 @@
 import firestore, { FirebaseFirestoreTypes } from "@react-native-firebase/firestore";
 import FireKeys from "./FireKeys";
 import moment from "moment";
-
+import { Platform } from "react-native";
+import storage from '@react-native-firebase/storage';
+import RNFS from 'react-native-fs';
 
 export default function useFireStoreUtil() {
 
@@ -282,11 +284,33 @@ export default function useFireStoreUtil() {
         return true
     };
 
+    const uploadMediaToFirebase = async (data: any) => {
+        try {
+            const uri = data;
+            if (!uri) throw new Error("No file URI");
+            const fileName = `file_${Date.now()}.jpg`;
+            const pathToFile = Platform.OS === 'ios' ? uri.replace('file://', '') : uri.replace('file://', '');
+            const fileExists = await RNFS.exists(pathToFile);
+            if (!fileExists) {
+                return;
+            }
+            const uploadRef = storage().ref(`uploads/${fileName}`);
+            const task = uploadRef.putFile(pathToFile);
+
+            await task;
+            const downloadURL = await uploadRef.getDownloadURL();
+            return downloadURL;
+        } catch (err: any) {
+            console.error('❌ Upload failed:', err.code, err.message);
+        }
+    };
+
 
 
     return {
         creatingCustomerUser,
         updatingCustomerUserDetail,
+        uploadMediaToFirebase,
         createProduct,
         updateProduct,
         gettingAllChats,

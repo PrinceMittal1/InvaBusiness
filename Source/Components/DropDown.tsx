@@ -7,25 +7,22 @@ import {
   Modal,
   FlatList,
   StyleSheet,
-  Pressable,
 } from 'react-native';
+import Colors from '../Keys/colors';
+import AppFonts from '../Functions/Fonts';
 
 interface DropdownProps {
   options: string[];
   selectedValue: string;
-  barBorderColor : any;
   onValueChange: (value: string) => void;
   label?: string;
-  alreadySelectedOptions : string[];
 }
 
 const Dropdown: React.FC<DropdownProps> = ({
   options,
   selectedValue,
   onValueChange,
-  barBorderColor,
   label,
-  alreadySelectedOptions
 }) => {
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -34,12 +31,11 @@ const Dropdown: React.FC<DropdownProps> = ({
     setModalVisible(false);
   };
 
-
   return (
     <View style={styles.container}>
 
       <TouchableOpacity
-        style={[styles.dropdown,barBorderColor]}
+        style={styles.dropdown}
         onPress={() => setModalVisible(true)}
       >
         <Text style={styles.selectedText}>{selectedValue || 'Select an option'}</Text>
@@ -54,15 +50,13 @@ const Dropdown: React.FC<DropdownProps> = ({
             <FlatList
               data={options}
               keyExtractor={(item) => item}
-              renderItem={({ item, index }) => (
-                <Pressable
-                  style={[styles.option, {borderBottomWidth: index == options?.length-1 ? 0 : 1 , backgroundColor : (alreadySelectedOptions && alreadySelectedOptions?.includes(item)) ? 'grey' : null }]}
-                  onPress={() => {
-                    !(alreadySelectedOptions && alreadySelectedOptions?.includes(item)) && handleSelect(item)
-                  }}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.option}
+                  onPress={() => handleSelect(item)}
                 >
                   <Text>{item}</Text>
-                </Pressable>
+                </TouchableOpacity>
               )}
             />
           </View>
@@ -87,12 +81,13 @@ const styles = StyleSheet.create({
   dropdown: {
     padding: 12,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: Colors?.buttonPrimaryColor,
     borderRadius: 8,
   },
   selectedText: {
     fontSize: 16,
-    color: '#000',
+    color: Colors?.DarkText,
+    fontFamily:AppFonts.Regular
   },
   modalOverlay: {
     flex: 1,
@@ -108,6 +103,7 @@ const styles = StyleSheet.create({
   },
   option: {
     padding: 12,
+    borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
 });

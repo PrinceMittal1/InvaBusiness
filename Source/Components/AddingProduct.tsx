@@ -13,6 +13,7 @@ import {
   FlatList,
   Alert,
   Linking,
+  Dimensions,
 } from "react-native";
 import RNFS from 'react-native-fs';
 import storage from '@react-native-firebase/storage';
@@ -30,6 +31,8 @@ import Dropdown from "./DropDown";
 import useFireStoreUtil from "../Functions/FireStoreUtils";
 import ProductUploadingModal from "../Modal/productUploadingModal";
 import { createVectorForUser } from "../Api";
+import AppFonts from "../Functions/Fonts";
+import Colors from "../Keys/colors";
 
 
 
@@ -40,7 +43,7 @@ interface props {
   ClickedOnPost?: any;
   ClosingModal?: any;
 }
-
+const { width, height } = Dimensions.get('window')
 const AddingProduct: React.FC<props> = ({
   cameraOnpress,
   videoOnpress,
@@ -198,22 +201,12 @@ const AddingProduct: React.FC<props> = ({
 
   const RenderItemForSelectedProduct = ({ item }: { item: any }) => {
     return (
-      <View
-        style={{
-          padding: 10,
-          paddingRight: 5,
-          margin: 5,
-          flexDirection: 'row',
-          alignItems: 'center',
-          backgroundColor: 'grey',
-          borderRadius: 10,
-        }}
-      >
-        <Text>{item}</Text>
-        <Pressable onPress={() => { removeItem(item) }} style={{ paddingHorizontal: 5 }}>
+      <View style={styles.tagItem}>
+        <Text style={styles.tagText}>{item}</Text>
+        <Pressable onPress={() => { removeItem(item) }} style={styles.tagRemoveButton}>
           <Image
             source={Images?.Cancel}
-            style={{ width: 16, height: 16 }}
+            style={styles.tagRemoveIcon}
             resizeMode="contain"
           />
         </Pressable>
@@ -240,28 +233,28 @@ const AddingProduct: React.FC<props> = ({
       </Pressable>
 
       <View style={{ width: '100%', alignSelf: 'center' }}>
-        <Text style={{ color: 'black', fontSize: 20 }}>Title</Text>
-        <TextInput
-          blurOnSubmit={false}
-          maxFontSizeMultiplier={1.5}
-          style={styles.reason}
-          placeholder={'Title'}
-          multiline
-          value={title}
-          onChangeText={(t: string) => setTitle(t)}
-          placeholderTextColor={'black'}
-          textAlignVertical="top"
-        />
+        <Text style={styles.inputLabel}>Title</Text>
+        <View style={styles?.dropdown}>
+          <TextInput
+            blurOnSubmit={false}
+            maxFontSizeMultiplier={1.5}
+            placeholder={'Title'}
+            multiline
+            value={title}
+            style={{ fontFamily: AppFonts.Regular, fontSize: 16 }}
+            onChangeText={(t: string) => setTitle(t)}
+            placeholderTextColor={Colors?.DarkText}
+            textAlignVertical="top"
+          />
+        </View>
       </View>
 
       <View style={{ alignSelf: 'center', marginTop: hp(2), width: '100%' }}>
-        <Text>Products Type</Text>
+        <Text style={styles.inputLabel}>Products Type</Text>
 
         <Dropdown
           options={['Saree', 'Suits', 'Toys', 'Dinner Set', 'Crockery', 'Pants', 'Shirts']}
           selectedValue={productType}
-          barBorderColor={{ borderColor: 'black', paddingVertical: 10 }}
-          alreadySelectedOptions={[]}
           onValueChange={(item) => {
             setProductType(item)
           }}
@@ -270,7 +263,7 @@ const AddingProduct: React.FC<props> = ({
 
 
       <View style={{ alignSelf: 'center', marginTop: hp(2), width: '100%' }}>
-        <Text>Products Tags</Text>
+        <Text style={styles.inputLabel}>Products Tags</Text>
 
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
           {selectedTags.map((item, index) => (
@@ -344,7 +337,7 @@ const AddingProduct: React.FC<props> = ({
           sendingTobackend();
         }}
         txtStyle={{ fontSize: 20 }}
-        btnStyle={{ marginTop: 20 }}
+        btnStyle={{ marginTop: 20, backgroundColor : Colors?.buttonPrimaryColor }}
       />
 
       {showViewer && <ShowMediaModal
@@ -491,4 +484,79 @@ const createStyles = (colors: any) =>
       top: 2,
       right: 8,
     },
+    container: {
+      flex: 1,
+      backgroundColor: Colors?.PrimaryBackground,
+    },
+    dropdown: {
+      padding: 12,
+      borderWidth: 1,
+      borderColor: Colors?.buttonPrimaryColor,
+      borderRadius: 8,
+    },
+    scrollContainer: {
+      flex: 1
+    },
+    profileImageContainer: {
+      marginTop: 20,
+      width: 100,
+      height: 100,
+      alignSelf: 'center'
+    },
+    profileImage: {
+      width: 100,
+      height: 100,
+      alignSelf: 'center',
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: 'grey'
+    },
+    editIcon: {
+      width: 30,
+      height: 30,
+      position: 'absolute',
+      bottom: -10,
+      right: -10
+    },
+    inputContainer: {
+      width: width * 0.9,
+      alignSelf: 'center',
+      marginTop: hp(1)
+    },
+    inputLabel: {
+      fontFamily: AppFonts.Regular,
+      fontSize: 16,
+      marginLeft: wp(1),
+      color: Colors?.DarkText
+    },
+    tagsContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap'
+    },
+    tagItem: {
+      padding: 10,
+      paddingRight: 5,
+      margin: 5,
+      marginBottom: 0,
+      marginTop: 4,
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: '#e0dedd',
+      borderRadius: 10
+    },
+    tagText: {
+      fontSize: 14,
+      fontFamily: AppFonts.Regular
+    },
+    tagRemoveButton: {
+      paddingHorizontal: 5
+    },
+    tagRemoveIcon: {
+      width: 14,
+      height: 14
+    },
+    bottomButton: {
+      marginBottom: hp(5),
+      marginTop: hp(5)
+    }
   });

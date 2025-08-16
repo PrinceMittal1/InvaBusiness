@@ -14,9 +14,9 @@ const Splash = () => {
 
     useEffect(() => {
         if (user_id) {
-            navigation.navigate(keys.BottomBar)
+            navigation.replace(keys.BottomBar)
         } else {
-            navigation.navigate(keys?.Login)
+            navigation.replace(keys?.Login)
         }
     }, [user_id])
 

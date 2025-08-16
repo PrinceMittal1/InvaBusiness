@@ -10,6 +10,7 @@ import Loader from "../Components/Loader";
 import Home from "../Screens/Home";
 import BottomTabs from "./BottomNavigation";
 import Chat from "../Screens/Chat";
+import VerificationScreen from "../Screens/Verification";
 
 const MainStack = () => {
     const Stack = createNativeStackNavigator();
@@ -22,6 +23,7 @@ const MainStack = () => {
                 <Stack.Screen name={keys.ScreenForUserDetail} component={ScreenForUserDetails} />
                 <Stack.Screen name={keys.BottomBar} component={BottomTabs} />
                 <Stack.Screen name={keys.Chat} component={Chat} />
+                <Stack.Screen name={keys.VerificationScreen} component={VerificationScreen} />
             </Stack.Navigator>
             {loading && <Loader />}</>
     )
