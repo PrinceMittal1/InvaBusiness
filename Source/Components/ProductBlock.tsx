@@ -2,7 +2,6 @@ import {
     Dimensions,
     FlatList,
     Image,
-    ImageBackground,
     Platform,
     Pressable,
     StyleSheet,
@@ -10,38 +9,41 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import React, { useContext, useRef, useState } from "react";
-import { useNavigation, useTheme } from "@react-navigation/native";
+import React, { useState } from "react";
+import { useNavigation } from "@react-navigation/native";
 import FastImage from "@d11/react-native-fast-image";
-import moment from "moment";
-import "moment/locale/es"; // Spanish
-import "moment/locale/it"; // Italian
-import "moment/locale/fr"; // French
-import "moment/locale/en-gb"; // English (UK)
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import "moment/locale/es";
+import "moment/locale/it";
+import "moment/locale/fr";
+import "moment/locale/en-gb";
 import { useSelector } from "react-redux";
 import { hp, wp } from "../Keys/dimension";
-// import CarouselMediaModal from "../modals/CarouselMediaModal";
-import keys from "../Routes/AppRoutes";
+import AppRoutes from "../Routes/AppRoutes";
 import Images from "../Keys/Images";
-
+import useFireStoreUtil from "../Functions/FireStoreUtils";
+import Colors from "../Keys/colors";
+import AppFonts from "../Functions/Fonts";
+import { deleteProduct } from "../Api";
+import DeleteConfirmation from "../Modal/DeleteConfirmation";
+import EditingProductModal from "../Modal/EditingProductModal";
 
 const screenWidth = Dimensions.get("window").width;
+
 const ProductBlock = ({
     item,
-    index,
+    showShopName = true,
     onDeleting,
-    onCommentPress,
     onEditing,
+    onCommentPress,
     onSharePress,
-
 }: any) => {
     const styles = useStyles();
     const [blockItem, setBlockItem] = useState(item);
     const navigation = useNavigation() as any;
-    const { token } = useSelector((state: any) => state.userData);
+    const { user_id } = useSelector((state: any) => state.userData);
     const [activeIndex2, setActiveIndex2] = useState(0);
-
+    const [showEdit, setShowEdit] = useState<any>(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false)
 
     const formatCount = (num: number): string => {
         if (num < 1000) return num.toString();
@@ -50,134 +52,131 @@ const ProductBlock = ({
         return (num / 1_000_000_000).toFixed(1).replace(/\.0$/, '') + 'B';
     };
 
+    const formatingDate = (timestamp: any) => {
+        const date = new Date(timestamp);
+        return date
+            .toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "2-digit",
+            })
+            .replace(/\//g, "-");
+    };
 
-    let formatingDate = (timestamp: any) => {
-        const date = new Date(timestamp * 1000); // multiply by 1000 to convert seconds to milliseconds
-
-        const options: any = { day: '2-digit', month: 'short', year: 'numeric' };
-        return (date.toLocaleDateString('en-US', options))
+    let updatingDataForProduct = (data) =>{
+        setBlockItem({...data})
     }
 
 
+
     return (
-        <>
-            <View style={styles.mainView}>
-
-                <Pressable onPress={onEditing} style={{ alignSelf: 'flex-end', marginBottom: 10, flexDirection: 'row' }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: 'grey', borderRadius: 50, padding: 5, paddingHorizontal: 10 }}>
-                        <Text style={{ fontSize: 20 }}>Edit</Text>
-                        <Image source={Images?.EditForProductBlock} style={{ width: 20, height: 20, marginLeft: 5 }} resizeMode="contain" />
-                    </View>
-
-                    <Pressable onPress={()=>{
-                        onDeleting()
-                    }} style={{ flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: 'grey', borderRadius: 50, padding: 5, paddingHorizontal: 10, marginLeft:5 }}>
-                        <Text style={{ fontSize: 20 }}>Delete</Text>
-                        <Image source={Images?.delete} style={{ width: 20, height: 20, marginLeft: 5 }} resizeMode="contain" />
-                    </Pressable>
+        <View style={styles.mainView}>
+            <View style={styles.sellerRow}>
+                <Pressable onPress={() => {
+                    setShowEdit(true)
+                }} style={{ flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: 'grey', borderRadius: 50, padding: 5, paddingHorizontal: 10 }}>
+                    <Text style={{ fontSize: 20 }}>Edit</Text>
+                    <Image source={Images?.EditForProductBlock} style={{ width: 20, height: 20, marginLeft: 5 }} resizeMode="contain" />
                 </Pressable>
 
-                <View style={{ height: wp(120), width: screenWidth * 0.90, borderRadius: 10, alignSelf: "center" }} >
+                <Pressable onPress={() => setShowDeleteModal(true)} style={{ flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: 'grey', borderRadius: 50, padding: 5, paddingHorizontal: 10, marginLeft: 5 }}>
+                    <Text style={{ fontSize: 20 }}>Delete</Text>
+                    <Image source={Images?.delete} style={{ width: 20, height: 20, marginLeft: 5 }} resizeMode="contain" />
+                </Pressable>
+            </View>
 
-                    <FlatList
-                        onMomentumScrollEnd={(event) => {
-                            const contentOffsetX = event.nativeEvent.contentOffset.x;
-                            const currentIndex = Math.round(contentOffsetX / wp(85));
-                            setActiveIndex2(currentIndex)
-                        }}
-                        data={blockItem?.images}
-                        showsHorizontalScrollIndicator={false}
-                        keyExtractor={(item, index) => index?.toString()}
-                        bounces={false}
-                        style={{ height: wp(120), width: '100%' }}
-                        horizontal
-                        pagingEnabled
-                        renderItem={({ item, index }: any) => {
-                            return (
-                                <Pressable style={{ width: screenWidth * 0.90, height: wp(120), borderRadius: 10, overflow: "hidden", backgroundColor: 'grey' }}>
-                                    <FastImage
-                                        style={styles.carImg}
-                                        source={{ uri: item }}
-                                        resizeMode="contain">
-                                    </FastImage>
-                                </Pressable>
-                            );
-                        }}
-
-                    />
-
-                    <View style={{ flexDirection: "row", justifyContent: "center", position: "absolute", right: 0, left: 0, bottom: 4 }}>
-                        {Array.isArray(blockItem?.images) &&
-                            blockItem?.images.map((_: any, index: any) => (
-                                <View
-                                    key={index}
-                                    style={{
-                                        width: index === activeIndex2 ? 20 : 10,
-                                        height: 4,
-                                        borderRadius: 3,
-                                        marginHorizontal: 4,
-                                        backgroundColor: index === activeIndex2 ? 'orange' : '#ccc',
-                                    }}
-                                />
-                            ))}
-                    </View>
+            <Pressable style={styles.productImageWrapper}>
+                <FlatList
+                    onMomentumScrollEnd={(event) => {
+                        const contentOffsetX = event.nativeEvent.contentOffset.x;
+                        const currentIndex = Math.round(contentOffsetX / wp(85));
+                        setActiveIndex2(currentIndex);
+                    }}
+                    data={blockItem?.images}
+                    showsHorizontalScrollIndicator={false}
+                    keyExtractor={(_, index) => index.toString()}
+                    bounces={false}
+                    horizontal
+                    pagingEnabled
+                    renderItem={({ item }) => (
+                        <Pressable style={styles.productImagePressable}>
+                            <FastImage
+                                style={styles.carImg}
+                                source={{ uri: item }}
+                                resizeMode="cover"
+                            />
+                        </Pressable>
+                    )}
+                />
+                <View style={styles.imageDots}>
+                    {Array.isArray(blockItem?.images) &&
+                        blockItem?.images.map((_, index) => (
+                            <View
+                                key={index}
+                                style={[
+                                    styles.dot,
+                                    index === activeIndex2 ? styles.activeDot : styles.inactiveDot
+                                ]}
+                            />
+                        ))}
                 </View>
+            </Pressable>
 
+            <View style={styles.productDetails}>
+                {blockItem?.title &&
+                    <Text style={styles.productTitle}>{blockItem?.title}</Text>
+                }
+                {blockItem?.productType &&
+                    <Text style={styles.productType}>{blockItem?.productType}</Text>
+                }
+                {blockItem?.createdAt &&
+                    <Text style={styles.productDate}>{formatingDate(blockItem?.createdAt)}</Text>
+                }
+                {blockItem?.price &&
+                    <Text style={[styles.productType, { fontSize: 16 }]}>{`Price : ₹${blockItem?.price}`}</Text>
+                }
+            </View>
 
-                <View style={{ width: '95%', }}>
-                    <Text style={{ fontSize: 18 }}>{blockItem?.title}</Text>
-                    <Text style={{ fontSize: 18, color: 'grey', fontWeight: 700 }}>{blockItem?.productType}</Text>
-                    <Text style={{ fontSize: 14 }}>{formatingDate(blockItem?.createdAt)}</Text>
-                </View>
+            <View style={styles.bottomView}>
+                <View style={styles.bottomSubview}>
+                    <Pressable>
+                        <Image source={Images.viewIcon} style={styles.bottomIcon} resizeMode="contain" />
+                    </Pressable>
+                    <Text style={styles.bottomCount}>
+                        {blockItem?.viewCount > 0 ? formatCount(blockItem?.viewCount) : 0}
+                    </Text>
 
-                <View style={[styles.bottomView, {}]}>
-                    <View style={styles.bottomSubview}>
-                        <Pressable>
-                            <Image
-                                source={Images.viewIcon}
-                                style={styles.bottomIcon}
-                                resizeMode="contain"
-                            />
-                        </Pressable>
-                        <View style={{ marginLeft: 4 }} >
-                            <Text style={{ color: 'black', fontSize: 18 }}>{blockItem?.like_count > 0 ? formatCount(blockItem?.viewsCount) : 0}</Text>
-                        </View>
-
-                        <Pressable style={{ marginLeft: 6 }}>
-                            <Image
-                                source={Images.Heart}
-                                style={styles.bottomIcon}
-                                resizeMode="contain"
-                            />
-                        </Pressable>
-                        <View style={{ marginLeft: 4 }} >
-                            <Text style={{ color: 'black', fontSize: 18 }}>{blockItem?.like_count > 0 ? formatCount(blockItem?.like_count) : 0}</Text>
-                        </View>
-
-
-                        <Pressable onPress={onCommentPress} style={{ marginLeft: 6 }}>
-                            <Image
-                                source={Images.comment}
-                                style={styles.bottomIcon}
-                                resizeMode="contain"
-                            />
-                        </Pressable>
-                        <View style={{ marginLeft: 4 }} >
-                            <Text style={{ color: 'black', fontSize: 18 }}>{blockItem?.like_count > 0 ? formatCount(blockItem?.like_count) : 0}</Text>
-                        </View>
-                    </View>
-
-                    <Pressable onPress={onSharePress}>
+                    <Pressable style={styles.bottomIconMargin}>
                         <Image
-                            source={Images.share}
+                            source={blockItem?.liked_me ? Images.filledHeart : Images.Heart}
                             style={styles.bottomIcon}
                             resizeMode="contain"
                         />
                     </Pressable>
+                    <Text style={styles.bottomCount}>
+                        {blockItem?.likeCount > 0 ? formatCount(blockItem?.likeCount) : 0}
+                    </Text>
+
+                    <Pressable onPress={onCommentPress} style={styles.bottomIconMargin}>
+                        <Image source={Images.comment} style={styles.bottomIcon} resizeMode="contain" />
+                    </Pressable>
+                </View>
+
+                <View style={styles.bottomRight}>
+                    <Pressable onPress={onSharePress} style={styles.bottomIconMargin}>
+                        <Image source={Images.share} style={styles.bottomIcon} resizeMode="contain" />
+                    </Pressable>
                 </View>
             </View>
 
-        </>
+            {showDeleteModal &&
+                <DeleteConfirmation visible={showDeleteModal} confimation={onDeleting} onClosePress={() => setShowDeleteModal(false)} />
+            }
+            {
+                showEdit &&
+                <EditingProductModal data={blockItem} onClosePress={()=>{setShowEdit(false)}} callApiAgain={updatingDataForProduct}/>
+            }
+        </View>
     );
 };
 
@@ -185,131 +184,129 @@ export default ProductBlock;
 
 const useStyles = () =>
     StyleSheet.create({
-        viewBlock: { flexDirection: "row", alignItems: "center", marginTop: 10 },
-        viewtext: { fontSize: 10, marginLeft: 4 },
-        viewIcon: { height: 12, width: 12 },
-        time: {
-            //   fontFamily: AppFonts.MediumItalic,
-            fontSize: 11,
-            marginTop: Platform.OS == "ios" ? 6 : 4,
+        mainView: {
+            width: screenWidth * 0.95,
+            alignSelf: "center",
+            backgroundColor: '#FFFFFF',
+            padding: 10,
+            marginTop: 10,
+            borderWidth: 1,
+            borderColor: '#FFFFFF',
+            marginBottom: 10,
+            borderRadius: 10,
         },
-        comments: {
-            //   fontFamily: AppFonts.Medium,
-            fontSize: 12,
-            marginTop: 0,
+        sellerRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            alignSelf: 'flex-end',
+            justifyContent: 'space-between'
         },
-        tags: {
-            //   fontFamily: AppFonts.Medium,
-            fontSize: 12,
-            marginTop: -6,
+        sellerInfo: {
+            flexDirection: 'row',
+            alignItems: 'center'
         },
-        desc: {
-            fontSize: 12,
-            lineHeight: 14,
-            marginBottom: 2,
-            marginTop: Platform.OS == "ios" ? 12 : 10,
+        sellerImage: {
+            width: 50,
+            height: 50,
+            borderRadius: 25
+        },
+        sellerName: {
+            marginLeft: 10,
+            fontSize: 18
+        },
+        followBtn: {
+            borderWidth: 1,
+            borderColor: 'black',
+            padding: 5,
+            paddingHorizontal: 20,
+            borderRadius: 15
+        },
+        followBtnText: {
+            fontSize: 18
+        },
+        productImageWrapper: {
+            height: wp(100),
+            width: screenWidth * 0.90,
+            borderRadius: 10,
+            alignSelf: "center",
+            marginTop: 10
+        },
+        productImagePressable: {
+            width: screenWidth * 0.90,
+            height: wp(100),
+            borderRadius: 10,
+            overflow: "hidden",
         },
         carImg: {
             height: "100%",
             width: "100%",
             borderRadius: 10
         },
-        shopView: {
-            backgroundColor: "rgb(196,194,190)",
-            minWidth: 90,
-            minHeight: 30,
-            borderRadius: 10,
-            justifyContent: "center",
-            alignItems: "center",
-            paddingHorizontal: 10,
-            position: "absolute",
-            bottom: 16,
-            right: 5,
-            zIndex: 999,
-        },
-        shopNowText: {
-            //   fontFamily: AppFonts?.Medium,
-            fontSize: 12,
-        },
-        bottomSubview: {
+        imageDots: {
             flexDirection: "row",
-            alignItems: "center",
+            justifyContent: "center",
+            position: "absolute",
+            right: 0,
+            left: 0,
+            bottom: 4
         },
-        bottomIcon: { height: 20, width: 20 },
+        dot: {
+            height: 4,
+            borderRadius: 3,
+            marginHorizontal: 4
+        },
+        activeDot: {
+            width: 20,
+            backgroundColor: 'orange'
+        },
+        inactiveDot: {
+            width: 10,
+            backgroundColor: '#ccc'
+        },
+        productDetails: {
+            width: '95%',
+            marginTop: wp(1.5)
+        },
+        productTitle: {
+            fontSize: 18,
+            color: Colors?.DarkText,
+            fontFamily: AppFonts.SemiBold
+        },
+        productType: {
+            fontSize: 18,
+            color: Colors?.DarkText,
+            fontFamily: AppFonts.Regular,
+            marginTop: wp(0.5)
+        },
+        productDate: {
+            fontSize: 16,
+            marginTop: wp(0.5)
+        },
         bottomView: {
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "space-between",
             width: '100%',
             alignSelf: 'center',
-            marginTop: 10,
+            marginTop: wp(1.5)
         },
-        btn: { height: 25, width: 80 },
-        nestedView: { flexDirection: "row", alignItems: "center", flex: 4 },
-        name: {
-            fontSize: 15
-        },
-        date: {
-            fontSize: 11,
-            marginTop: Platform.OS == "ios" ? 6 : 2,
-            width: "100%",
-        },
-        userIcon: { height: 50, width: 50, borderRadius: 100, flex: 1 },
-        userIconForNullFolowed: {
-            height: 180,
-            width: 180,
-            borderRadius: 100,
-        },
-        subView: {
+        bottomSubview: {
             flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 10,
+            alignItems: "center"
         },
-        mainView: {
-            width: screenWidth * 0.95,
-            alignSelf: "center",
-            padding: 10,
-            marginTop: 10,
-            borderWidth: 1,
-            borderColor: 'grey',
-            marginBottom: 10,
-            borderRadius: 10,
+        bottomIcon: {
+            height: 20,
+            width: 20
         },
-        findView: {
-            minHeight: 26,
-            backgroundColor: "rgba(0,0,0,0.65)",
-            // width: "90%",
-            alignSelf: "flex-end",
-            borderRadius: 5,
-            position: "absolute",
-            top: 10,
-            paddingHorizontal: 8,
-            justifyContent: "center",
-            right: 10,
+        bottomCount: {
+            color: 'black',
+            fontSize: 18,
+            marginLeft: 4
         },
-        findText: {
-            fontSize: 12,
-            textAlign: "right",
-            alignSelf: "flex-end",
-            // marginTop: 5
+        bottomIconMargin: {
+            marginLeft: 6
         },
-
-        sliderView: {
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignSelf: "center",
-            position: "absolute",
-            bottom: 28,
-        },
-        activeIndex: {
-            height: hp(0.8),
-            borderRadius: 1000,
-            marginRight: 8,
-        },
-        adImg: {
-            width: "100%",
-            height: "100%",
-            borderRadius: 100,
-        },
+        bottomRight: {
+            flexDirection: 'row'
+        }
     });

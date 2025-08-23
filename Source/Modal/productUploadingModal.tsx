@@ -33,7 +33,7 @@ const ProductUploadingModal = ({ data, setStateForUploadingModal }: ProductUploa
               style={{ width: screen_Width * 0.6, height: screen_Width * 0.6 }}
             />
 
-            <Text style={{fontSize:20, alignSelf:'center'}}>{`${data?.percentage}%`}</Text>
+            <Text style={{fontSize:20, alignSelf:'center'}}>{Math.round(data?.percentage)}%</Text>
             <Text style={{fontSize:20, marginTop:10, alignSelf:'center'}}>{`${data?.number}/${data?.total}`}</Text>
             <Text style={styles.message}>{"Uploading product"}</Text>
           </View>

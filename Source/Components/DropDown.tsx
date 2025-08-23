@@ -15,13 +15,21 @@ interface DropdownProps {
   options: string[];
   selectedValue: string;
   onValueChange: (value: string) => void;
+  containerStyle?:any;
   label?: string;
+  removeItem?: any;
+  alreadySelectedOptions ?: any;
+  selectedTextStyle?:any;
 }
 
 const Dropdown: React.FC<DropdownProps> = ({
   options,
   selectedValue,
   onValueChange,
+  containerStyle,
+  removeItem,
+  alreadySelectedOptions,
+  selectedTextStyle,
   label,
 }) => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -31,14 +39,26 @@ const Dropdown: React.FC<DropdownProps> = ({
     setModalVisible(false);
   };
 
+  const removeItems = (value: string) =>{
+    removeItem(value);
+    setModalVisible(false);
+  }
+
+
+  const selectedOrNot = (item) =>{
+    if(!alreadySelectedOptions || alreadySelectedOptions?.length == 0) return false
+    if(alreadySelectedOptions?.includes(item)) return true
+    return false
+  }
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, containerStyle]}>
 
       <TouchableOpacity
         style={styles.dropdown}
         onPress={() => setModalVisible(true)}
       >
-        <Text style={styles.selectedText}>{selectedValue || 'Select an option'}</Text>
+        <Text style={[styles.selectedText, selectedTextStyle]}>{selectedValue || label || 'Select an option'}</Text>
       </TouchableOpacity>
 
       <Modal transparent visible={modalVisible} animationType="fade">
@@ -52,8 +72,8 @@ const Dropdown: React.FC<DropdownProps> = ({
               keyExtractor={(item) => item}
               renderItem={({ item }) => (
                 <TouchableOpacity
-                  style={styles.option}
-                  onPress={() => handleSelect(item)}
+                  style={selectedOrNot(item) ? styles.optionSelected : styles?.option}
+                  onPress={() => {selectedOrNot(item) ? removeItems(item) : handleSelect(item) }}
                 >
                   <Text>{item}</Text>
                 </TouchableOpacity>
@@ -70,7 +90,7 @@ export default Dropdown;
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 10,
+    marginTop: 10,
     width: '100%',
   },
   label: {
@@ -104,6 +124,12 @@ const styles = StyleSheet.create({
   option: {
     padding: 12,
     borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  optionSelected : {
+    padding: 12,
+    borderBottomWidth: 1,
+    backgroundColor:'red',
     borderBottomColor: '#eee',
   },
 });

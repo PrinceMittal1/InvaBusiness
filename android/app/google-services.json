@@ -1,0 +1,115 @@
+{
+  "project_info": {
+    "project_number": "505647175641",
+    "firebase_url": "https://inva-b5b22-default-rtdb.firebaseio.com",
+    "project_id": "inva-b5b22",
+    "storage_bucket": "inva-b5b22.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:505647175641:android:b62592dcb6be718406ebc8",
+        "android_client_info": {
+          "package_name": "com.inva"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "505647175641-kjrqsbk2vaasl5upfh93ifqr10mt2u4h.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.inva",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "505647175641-kocu17493ckl21c3ddhcqjua7k9icqaa.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.inva",
+            "certificate_hash": "4b110114b1ee6ba36d13f1c99f00feeb43665037"
+          }
+        },
+        {
+          "client_id": "505647175641-pt780qgtf1folf9e73nk9r17mrf5l1ib.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvswXtfYIpi0hGhBKGWpZnhSNi3ZHZ4js"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "505647175641-pt780qgtf1folf9e73nk9r17mrf5l1ib.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "505647175641-4nf4tfoiechf53t29u8s51svdi60dbt7.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.invabusiness"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:505647175641:android:ff7d9f9e6d4ad49606ebc8",
+        "android_client_info": {
+          "package_name": "com.invabusiness"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "505647175641-kb9r97f3rohqs0dbt84ajg5kbae6906h.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.invabusiness",
+            "certificate_hash": "4b110114b1ee6ba36d13f1c99f00feeb43665037"
+          }
+        },
+        {
+          "client_id": "505647175641-pa2iajc9vcbudni9gsulkh769shf2n6k.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.invabusiness",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "505647175641-pt780qgtf1folf9e73nk9r17mrf5l1ib.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvswXtfYIpi0hGhBKGWpZnhSNi3ZHZ4js"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "505647175641-pt780qgtf1folf9e73nk9r17mrf5l1ib.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "505647175641-4nf4tfoiechf53t29u8s51svdi60dbt7.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.invabusiness"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

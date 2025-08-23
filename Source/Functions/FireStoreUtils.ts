@@ -305,6 +305,190 @@ export default function useFireStoreUtil() {
         }
     };
 
+    const gettingAllComments = async (productId: string) => {
+        try {
+            const response = await firestore()
+                .collection(FireKeys.Comment)
+                .doc(productId)
+                .collection("List")
+                .orderBy("createdAt", "desc")
+                .get();
+
+            const comments = response.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+            }));
+
+            console.log("✅ All comments: ------- in firebase", comments);
+            return comments;
+        } catch (error) {
+            console.error("❌ Error getting comments:", error);
+            return [];
+        }
+    };
+
+    const gettingAllCommentsWithReplies = async (productId: string) => {
+        try {
+            const commentSnapshot = await firestore()
+                .collection(FireKeys.Comment)
+                .doc(productId)
+                .collection("List")
+                .orderBy("createdAt", "desc") // optional: latest first
+                .get();
+
+            const comments = await Promise.all(
+                commentSnapshot.docs.map(async (doc) => {
+                    const commentData = {
+                        id: doc.id,
+                        ...doc.data(),
+                        replies: [] as any[], // default empty
+                    };
+                    try {
+                        const repliesSnapshot = await doc.ref.collection("replies").orderBy("createdAt", "desc").get();
+                        const replies = repliesSnapshot.docs.map(replyDoc => ({
+                            id: replyDoc.id,
+                            ...replyDoc.data(),
+                        }));
+
+                        commentData.replies = replies;
+                    } catch (repliesError) {
+                        console.error(`❌ Error fetching replies for comment ${doc.id}:`, repliesError);
+                    }
+
+                    return commentData;
+                })
+            );
+            return comments;
+        } catch (error) {
+            console.error("❌ Error getting comments with replies:", error);
+            return [];
+        }
+    };
+
+    const addingCommentForTheProduct = async (productId: any, text: any, sellerId: string, sellerName: string, profile_picture: string) => {
+        try {
+            const commentData = {
+                sellerId: sellerId,
+                comment: text,
+                productId: productId,
+                sellerName: sellerName,
+                profile_picture: profile_picture,
+                createdAt: moment().unix(),
+            };
+            const docRef = await firestore()
+                .collection(FireKeys.Comment)
+                .doc(productId)
+                .collection('List')
+                .add(commentData);
+
+            return {
+                state: true,
+                id: docRef.id
+            }
+        } catch (error) {
+            console.error("❌ Error adding comment:", error);
+            return {
+                state: false
+            }
+        }
+    }
+
+
+    const addingCommentForNestedProduct = async (parent_id: any, productId: any, text: any, userId: string, name: string, profile_picture: string) => {
+        try {
+            // console.log("all id ---------- ", productId, parent_id, text, userId, name, profile_picture)
+            const commentData = {
+                sellerId : userId,
+                comment: text,
+                productId: productId,
+                parent_id: parent_id,
+                sellerName : name,
+                profile_picture: profile_picture,
+                createdAt: moment().unix(),
+            };
+            const docRef = await firestore()
+                .collection(FireKeys.Comment)
+                .doc(productId)
+                .collection('List')
+                .doc(parent_id).collection('replies').add(commentData)
+
+            return {
+                state: true,
+                id: docRef.id
+            }
+        } catch (error) {
+            console.error("❌ Error adding comment:", error);
+            return {
+                state: false,
+                id: ''
+            }
+        }
+    }
+
+    const deletingCommentForTheProduct = async (productId: any, commentId: any) => {
+        try {
+            await firestore()
+                .collection(FireKeys.Comment)
+                .doc(productId)
+                .collection('List')
+                .doc(commentId)
+                .delete();
+
+            return true
+        } catch (error) {
+            console.error("❌ Error removing comment:", error);
+            return {
+                state: false
+            }
+        }
+    }
+
+    const deletingCommentForTheProductForNesting = async (productId: any, commentId: any, id: any) => {
+        try {
+            await firestore()
+                .collection(FireKeys.Comment)
+                .doc(productId)
+                .collection('List')
+                .doc(commentId)
+                .collection('replies')
+                .doc(id)
+                .delete();
+
+            return true
+        } catch (error) {
+            console.error("❌ Error removing comment:", error);
+            return {
+                state: false
+            }
+        }
+    }
+
+     const updatingCommentForTheProduct = async (productId: any, text: any, commentId: string) => {
+        try {
+            await firestore().collection(FireKeys.Comment).doc(productId).collection('List').doc(commentId).update({
+                comment: text,
+                updatedAt: moment().unix(),
+            })
+            return true
+        } catch (error) {
+            console.error("❌ Error adding comment:", error);
+            return false
+        }
+    }
+
+    const updatingCommentForTheProductNested = async (productId: any, text: any, commentId: string, id: string) => {
+        try {
+            await firestore().collection(FireKeys.Comment).doc(productId).collection('List').doc(commentId).collection('replies').doc(id).update({
+                comment: text,
+                updatedAt: moment().unix(),
+            })
+            return true
+        } catch (error) {
+            console.error("❌ Error adding comment:", error);
+            return false
+        }
+    }
+
 
 
     return {
@@ -316,6 +500,14 @@ export default function useFireStoreUtil() {
         gettingAllChats,
         createOrGetChatRoom,
         fetchMessagesWithPagination,
-        sendMessageToRoom
+        sendMessageToRoom,
+        gettingAllComments,
+        gettingAllCommentsWithReplies,
+        addingCommentForTheProduct,
+        addingCommentForNestedProduct,
+        deletingCommentForTheProductForNesting,
+        deletingCommentForTheProduct,
+        updatingCommentForTheProductNested,
+        updatingCommentForTheProduct
     };
 }

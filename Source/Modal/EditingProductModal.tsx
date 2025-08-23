@@ -1,32 +1,35 @@
 import FastImage from '@d11/react-native-fast-image';
 import React, { useState } from 'react';
-import { Modal, View, Text, ActivityIndicator, StyleSheet, Dimensions, TouchableWithoutFeedback, Pressable, TextInput, FlatList, TouchableOpacity, Platform } from 'react-native';
+import { Modal, View, Text, ActivityIndicator, StyleSheet, Dimensions, TouchableWithoutFeedback, Pressable, TextInput, FlatList, TouchableOpacity, Platform, Image } from 'react-native';
 import Images from '../Keys/Images';
 import { hp, wp } from '../Keys/dimension';
 import Dropdown from '../Components/DropDown';
 import { useDispatch, useSelector } from 'react-redux';
-import { Image } from 'react-native-reanimated/lib/typescript/Animated';
 import BottomButton from '../Components/BottomButton';
 import ImageCropPicker from 'react-native-image-crop-picker';
 import { setLoader } from '../Redux/Reducers/tempData';
 import useFireStoreUtil from '../Functions/FireStoreUtils';
 import RNFS from 'react-native-fs';
 import storage from '@react-native-firebase/storage';
+import AppFonts from '../Functions/Fonts';
+import Colors from '../Keys/colors';
+import { editProductApi } from '../Api';
 
 
 const { width: screen_Width, height: screen_Height } = Dimensions.get('window')
 
-const EditingProductModal = ({ data, onClosePress }: any) => {
-
-    const [title, setTitle] = useState(data?.data?.title);
-    const [oldData, setOldData] = useState({...data?.data})
+const EditingProductModal = ({ data, onClosePress, callApiAgain }: any) => {
+    const [title, setTitle] = useState(data?.title);
+    const [description, setDescription] = useState(data?.description);
+    const [oldData, setOldData] = useState({ ...data })
     const [showViewer, setShowViewer] = useState<boolean>(false);
     const [mediaData, setMediaData] = useState<any>(null);
-    const [images1, setImages] = useState<any>(data?.data?.images);
-    const [selectedTags, setSelectedTags] = useState(data?.data?.selectedTags)
+    const [images1, setImages] = useState<any>(data?.images);
+    const [price, setPrice] = useState(String(data?.price) ?? '');
+    const [selectedTags, setSelectedTags] = useState(data?.tags ?? [])
     const dispatch = useDispatch();
     const { user_id } = useSelector((state: any) => state.userData);
-    const [productType, setProductType] = useState(data?.data?.productType)
+    const [productType, setProductType] = useState(data?.productType)
     const [stateForUploadingModal, setStateForUploadingModal] = useState({
         percentage: '0',
         number: 1,
@@ -45,22 +48,12 @@ const EditingProductModal = ({ data, onClosePress }: any) => {
 
     const RenderItemForSelectedProduct = ({ item }: { item: any }) => {
         return (
-            <View
-                style={{
-                    padding: 10,
-                    paddingRight: 5,
-                    margin: 5,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    backgroundColor: 'grey',
-                    borderRadius: 10,
-                }}
-            >
-                <Text>{item}</Text>
-                <Pressable onPress={() => { removeItem(item) }} style={{ paddingHorizontal: 5 }}>
-                    <FastImage
+            <View style={styles.tagItem}>
+                <Text style={styles.tagText}>{item}</Text>
+                <Pressable onPress={() => { removeItem(item); }} style={styles.tagRemoveButton}>
+                    <Image
                         source={Images?.Cancel}
-                        style={{ width: 16, height: 16 }}
+                        style={styles.tagRemoveIcon}
                         resizeMode="contain"
                     />
                 </Pressable>
@@ -158,10 +151,21 @@ const EditingProductModal = ({ data, onClosePress }: any) => {
         }
     };
 
+    const changingPrice = (t: string) => {
+        const clean = t.replace(/^\₹/, "");
 
-
+        if (clean.length > 0) {
+            setPrice(`₹${clean}`);
+        } else {
+            setPrice("");
+        }
+    };
 
     const sendingTobackend = async () => {
+        if(oldData?.price == price && oldData?.title == title && oldData?.description == description && oldData?.productType == productType && oldData?.tags == selectedTags && oldData?.images == images1){
+            onClosePress();
+            return true
+        }
         try {
             let urlOfImages: string[] = [];
             for (const [index, image] of images1.entries()) {
@@ -171,24 +175,34 @@ const EditingProductModal = ({ data, onClosePress }: any) => {
                     if (uploadedUrl) {
                         urlOfImages.push(uploadedUrl);
                     }
-                }else{
+                } else {
                     urlOfImages.push(image);
                 }
             }
-            const fireUtils = useFireStoreUtil();
-
-            const ref: any = await fireUtils.updateProduct(oldData?.id, user_id, urlOfImages, title, productType, selectedTags)
-            if (ref) {
-                setStateForUploadingModal({
-                    ...stateForUploadingModal,
-                    state: false
-                })
-                dispatch(setLoader(false));
-                onClosePress();
+            let payload : any = {}
+            if(oldData?.images != images1){
+                payload.images = urlOfImages;
+            }
+            if(oldData.title != title){
+                payload.title = title;
+            }
+            if(oldData?.tags != selectedTags){
+                payload.tags = selectedTags;
+            }
+            if(oldData.productType != productType){
+                payload.productType = productType;
+            }
+            if(oldData.price != price){
+                payload.price = Number(price.replace(/[^0-9.]/g, ""));
+            }
+            const res = await editProductApi(data?._id, payload);
+            if(res.status == 200){
+                callApiAgain(res?.data?.product);
             }
         } catch (error) {
             console.error("⚠️ Catch Error:", error);
         } finally {
+            onClosePress();
         }
     };
 
@@ -198,133 +212,163 @@ const EditingProductModal = ({ data, onClosePress }: any) => {
             animationType="fade"
             visible={true}
         >
-            <TouchableWithoutFeedback onPress={() => {
+            <View style={styles.modalBackground}>
+                <View style={styles.modalContainer}>
+                    <Pressable
+                        style={{ alignSelf: 'flex-end', padding: 10, marginRight: 5 }}
+                        onPress={onClosePress}
+                    >
+                        <FastImage
+                            source={Images?.Cancel}
+                            style={{
+                                height: hp(4),
+                                width: wp(4),
+                            }}
+                            resizeMode="contain"
+                        />
+                    </Pressable>
 
-            }}>
-                <View style={styles.modalBackground}>
-                    <View style={styles.modalContainer}>
-                        <Pressable
-                            style={{ alignSelf: 'flex-end', padding: 10, marginRight: 5 }}
-                            onPress={onClosePress}
-                        >
-                            <FastImage
-                                source={Images?.Cancel}
-                                style={{
-                                    height: hp(4),
-                                    width: wp(4),
-                                }}
-                                resizeMode="contain"
-                            />
-                        </Pressable>
-
-                        <View style={{ width: '100%', alignSelf: 'center' }}>
-                            <Text style={{ color: 'black', fontSize: 20 }}>Title</Text>
+                    <View style={styles.inputWrapper}>
+                        <Text style={styles.inputLabel}>Title</Text>
+                        <View style={styles.dropdown}>
                             <TextInput
                                 blurOnSubmit={false}
                                 maxFontSizeMultiplier={1.5}
-                                style={styles.reason}
                                 placeholder={'Title'}
                                 multiline
                                 value={title}
+                                style={styles.inputText}
                                 onChangeText={(t: string) => setTitle(t)}
-                                placeholderTextColor={'black'}
+                                placeholderTextColor={Colors?.DarkText}
                                 textAlignVertical="top"
                             />
                         </View>
+                    </View>
 
-                        <View style={{ alignSelf: 'center', marginTop: hp(2), width: '100%' }}>
-                            <Text>Products Type</Text>
-
-                            <Dropdown
-                                options={['Saree', 'Suits', 'Toys', 'Dinner Set', 'Crockery', 'Pants', 'Shirts']}
-                                selectedValue={productType}
-                                barBorderColor={{ borderColor: 'black', paddingVertical: 10 }}
-                                alreadySelectedOptions={[]}
-                                onValueChange={(item) => {
-                                    setProductType(item)
-                                }}
+                    <View style={styles.inputWrapperMargin}>
+                        <Text style={styles.inputLabel}>Description</Text>
+                        <View style={styles.dropdown}>
+                            <TextInput
+                                blurOnSubmit={false}
+                                maxFontSizeMultiplier={1.5}
+                                placeholder={'Description'}
+                                multiline
+                                value={description}
+                                style={styles.inputText}
+                                onChangeText={setDescription}
+                                placeholderTextColor={Colors?.DarkText}
+                                textAlignVertical="top"
                             />
                         </View>
+                    </View>
 
+                    <View style={{ alignSelf: 'center', marginTop: hp(1), width: '100%' }}>
+                        <Text style={styles.inputLabel}>Products Type</Text>
 
-                        <View style={{ alignSelf: 'center', marginTop: hp(2), width: '100%' }}>
-                            <Text>Products Tags</Text>
-
-                            <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-                                {selectedTags?.map((item, index) => (
-                                    <RenderItemForSelectedProduct key={index} item={item} />
-                                ))}
-                            </View>
-
-                            <Dropdown
-                                options={['Saree for women', 'Suits for ladies', 'Toy gun', 'Dinner Set red', 'Crockery glasses', 'Pants for men', 'Shirts black']}
-                                selectedValue={''}
-                                barBorderColor={{ borderColor: 'black', paddingVertical: 10 }}
-                                alreadySelectedOptions={selectedTags}
-                                onValueChange={(item) => {
-                                    let oldItems: any = [...selectedTags, item]
-                                    setSelectedTags(oldItems)
-                                }}
-                            />
-                        </View>
-
-                        <View style={{}}>
-                            <FlatList
-                                data={images1.length < 3 ? [...images1, "upload"] : images1}
-                                numColumns={3}
-                                keyExtractor={(item, index) => index?.toString()}
-                                // style={{ alignSelf: 'center' }}
-                                style={{ maxHeight: 120 }}
-                                showsHorizontalScrollIndicator={false}
-                                renderItem={({ item, index }) => {
-                                    return item == "upload" ? (
-                                        <Pressable
-                                            key={index}
-                                            onPress={() => {
-                                                openGallery();
-                                            }}
-                                            style={[
-                                                styles.uploadView,
-                                                {
-                                                    borderColor: 'grey',
-                                                },
-                                            ]}
-                                        >
-                                            <FastImage
-                                                resizeMode={"contain"}
-                                                source={Images?.upload}
-                                                style={[
-                                                    styles.uploadImg,
-                                                    {
-                                                        height: "40%",
-                                                        width: "40%",
-                                                        borderRadius: 0,
-                                                        justifyContent: "flex-end",
-                                                    },
-                                                ]}
-                                            ></FastImage>
-                                        </Pressable>
-                                    ) : (
-                                        renderItem({ item, index })
-                                    );
-                                }}
-                            />
-                        </View>
-
-
-
-                        <BottomButton
-                            title={'Save'}
-                            clickable={() => {
-                                dispatch(setLoader(true))
-                                sendingTobackend();
+                        <Dropdown
+                            options={['Saree', 'Suits', 'Toys', 'Dinner Set', 'Crockery', 'Pants', 'Shirts']}
+                            selectedValue={productType}
+                            onValueChange={(item) => {
+                                setProductType(item)
                             }}
-                            txtStyle={{ fontSize: 20 }}
-                            btnStyle={{ marginTop: 20, width: screen_Width * 0.85 }}
                         />
                     </View>
+
+                    <View style={{ alignSelf: 'center', marginTop: hp(1), width: '100%' }}>
+                        <Text style={styles.inputLabel}>Price</Text>
+                        <View style={styles.dropdown}>
+                            <TextInput
+                                blurOnSubmit={false}
+                                maxFontSizeMultiplier={1.5}
+                                placeholder={'Price'}
+                                multiline
+                                value={price}
+                                style={styles.inputPrice}
+                                keyboardType="numeric"
+                                onChangeText={changingPrice}
+                                placeholderTextColor={Colors?.DarkText}
+                                textAlignVertical="top"
+                            />
+                        </View>
+                    </View>
+
+                    <View style={{ alignSelf: 'center', marginTop: hp(1), width: '100%' }}>
+                        <Text style={styles.inputLabel}>Products Tags</Text>
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                            {selectedTags?.map((item, index) => (
+                                <RenderItemForSelectedProduct key={index} item={item} />
+                            ))}
+                        </View>
+                        <Dropdown
+                            options={['Saree for women', 'Suits for ladies', 'Toy gun', 'Dinner Set red', 'Crockery glasses', 'Pants for men', 'Shirts black']}
+                            selectedValue={''}
+                            alreadySelectedOptions={selectedTags}
+                            onValueChange={(item) => {
+                                let oldItems: any = [...selectedTags, item]
+                                setSelectedTags(oldItems)
+                            }}
+                            removeItem={(item : any)=>{
+                                const newArr = selectedTags.filter((items:any) => items !== item);
+                                setSelectedTags(newArr)
+                            }}
+                        />
+                    </View>
+
+                    <View style={{}}>
+                        <FlatList
+                            data={images1.length < 3 ? [...images1, "upload"] : images1}
+                            numColumns={3}
+                            keyExtractor={(item, index) => index?.toString()}
+                            style={{ maxHeight: 120 }}
+                            showsHorizontalScrollIndicator={false}
+                            renderItem={({ item, index }) => {
+                                return item == "upload" ? (
+                                    <Pressable
+                                        key={index}
+                                        onPress={() => {
+                                            openGallery();
+                                        }}
+                                        style={[
+                                            styles.uploadView,
+                                            {
+                                                borderColor: 'grey',
+                                            },
+                                        ]}
+                                    >
+                                        <FastImage
+                                            resizeMode={"contain"}
+                                            source={Images?.upload}
+                                            style={[
+                                                styles.uploadImg,
+                                                {
+                                                    height: "40%",
+                                                    width: "40%",
+                                                    borderRadius: 0,
+                                                    justifyContent: "flex-end",
+                                                },
+                                            ]}
+                                        ></FastImage>
+                                    </Pressable>
+                                ) : (
+                                    renderItem({ item, index })
+                                );
+                            }}
+                        />
+                    </View>
+
+
+
+                    <BottomButton
+                        title={'Save'}
+                        clickable={() => {
+                            dispatch(setLoader(true))
+                            sendingTobackend();
+                        }}
+                        txtStyle={{ fontSize: 20 }}
+                        btnStyle={{ marginTop: 20, width: screen_Width * 0.85, backgroundColor:Colors?.buttonPrimaryColor }}
+                    />
                 </View>
-            </TouchableWithoutFeedback>
+            </View>
         </Modal>
     );
 };
@@ -338,10 +382,39 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center'
     },
+    dropdown: {
+        padding: 12,
+        borderWidth: 1,
+        marginTop: 10,
+        borderColor: Colors?.buttonPrimaryColor,
+        borderRadius: 8,
+    },
+    tagItem: {
+      padding: 10,
+      paddingRight: 5,
+      margin: 5,
+      marginBottom: 0,
+      marginTop: 4,
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: '#e0dedd',
+      borderRadius: 10
+    },
+    tagText: {
+      fontSize: 14,
+      fontFamily: AppFonts.Regular
+    },
+    tagRemoveButton: {
+      paddingHorizontal: 5
+    },
+    tagRemoveIcon: {
+      width: 14,
+      height: 14
+    },
     modalContainer: {
         backgroundColor: 'white',
         borderRadius: 12,
-        width: screen_Width * 0.9,
+        width: screen_Width * 0.95,
         padding: 24,
         alignItems: 'center',
         justifyContent: 'center'
@@ -363,6 +436,33 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         alignSelf: "center",
+    },
+    inputWrapper: {
+        width: '100%',
+        alignSelf: 'center',
+    },
+    inputWrapperMargin: {
+        width: '100%',
+        alignSelf: 'center',
+        marginTop: hp(1),
+    },
+    inputWrapperMarginSmall: {
+        width: '100%',
+        alignSelf: 'center',
+        marginTop: hp(0),
+    },
+    inputText: {
+        fontSize: 16,
+    },
+    inputPrice: {
+        fontFamily: AppFonts.Regular,
+        fontSize: 16,
+    },
+    inputLabel: {
+        fontFamily: AppFonts.Regular,
+        fontSize: 14,
+        marginLeft: wp(1),
+        color: Colors?.DarkText,
     },
     uploadImg: {
         height: "34%",

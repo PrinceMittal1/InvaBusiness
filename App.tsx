@@ -15,6 +15,7 @@ import MainStack from './Source/Navigation/Stack';
 import { NavigationContainer } from '@react-navigation/native';
 import { store, persistor } from './Source/Redux/store';
 import { PersistGate } from "redux-persist/integration/react";
+import Toast from "react-native-toast-message";
 
 
 function App(): React.JSX.Element {
@@ -23,6 +24,7 @@ function App(): React.JSX.Element {
       <PersistGate loading={null} persistor={persistor}>
         <NavigationContainer>
           <MainStack />
+          <Toast />
         </NavigationContainer>
       </PersistGate>
     </Provider>

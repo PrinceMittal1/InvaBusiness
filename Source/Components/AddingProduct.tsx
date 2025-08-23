@@ -14,6 +14,7 @@ import {
   Alert,
   Linking,
   Dimensions,
+  ScrollView,
 } from "react-native";
 import RNFS from 'react-native-fs';
 import storage from '@react-native-firebase/storage';
@@ -30,11 +31,10 @@ import ShowMediaModal from "./ShowMediaModal";
 import Dropdown from "./DropDown";
 import useFireStoreUtil from "../Functions/FireStoreUtils";
 import ProductUploadingModal from "../Modal/productUploadingModal";
-import { createVectorForUser } from "../Api";
+import { creatingProduct } from "../Api";
 import AppFonts from "../Functions/Fonts";
 import Colors from "../Keys/colors";
-
-
+import { showToast } from "../Functions/showToast";
 
 interface props {
   cameraOnpress?: () => void;
@@ -42,18 +42,23 @@ interface props {
   fetchingAllFeed?: any;
   ClickedOnPost?: any;
   ClosingModal?: any;
+  productsaved ?: any;
 }
-const { width, height } = Dimensions.get('window')
+const { width, height } = Dimensions.get('window');
+
 const AddingProduct: React.FC<props> = ({
   cameraOnpress,
   videoOnpress,
   fetchingAllFeed,
   ClickedOnPost,
   ClosingModal,
+  productsaved,
 }) => {
-  const { user_id } = useSelector((state: any) => state.userData);
+  const { user_id, userData } = useSelector((state: any) => state.userData);
   const { colors, images } = useTheme() as any;
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
   const [showViewer, setShowViewer] = useState<boolean>(false);
   const [mediaData, setMediaData] = useState<any>(null);
   const navigation: any = useNavigation();
@@ -63,10 +68,10 @@ const AddingProduct: React.FC<props> = ({
     number: 1,
     total: 1,
     state: false
-  })
-  const [selectedTags, setSelectedTags] = useState([])
+  });
+  const [selectedTags, setSelectedTags] = useState([]);
   const dispatch = useDispatch();
-  const [productType, setProductType] = useState('')
+  const [productType, setProductType] = useState('');
   const styles = createStyles(colors);
 
   const removeImage = (index: any) => {
@@ -95,10 +100,10 @@ const AddingProduct: React.FC<props> = ({
           number: currentNumber,
           total: totalNumber,
           state: true
-        })
+        });
       });
 
-      await task; // wait for completion
+      await task;
       const downloadURL = await uploadRef.getDownloadURL();
       return downloadURL;
     } catch (err: any) {
@@ -106,24 +111,52 @@ const AddingProduct: React.FC<props> = ({
     }
   };
 
+  const allValidation = () => {
+    if (!title?.trim()) {
+      showToast("Title is required");
+      return false
+    } else if (!description?.trim()) {
+      showToast("Description is required");
+      return false
+    } else if (!productType?.trim()) {
+      showToast("Prodcut type is required");
+      return false
+    } else if (images1?.length < 1) {
+      showToast("Atleast one photo is required");
+      return false
+    }
+    setStateForUploadingModal({
+      ...stateForUploadingModal,
+      state: true
+    });
+    return true
+  }
+
   const sendingTobackend = async () => {
     try {
-      let urlOfImages: string[] = [];
-      for (const [index, image] of images1.entries()) {
-        const uploadedUrl = await uploadMediaToFirebase(image?.path, index + 1, images1.length);
-        if (uploadedUrl) {
-          urlOfImages.push(uploadedUrl);
+      if (allValidation()) {
+        let urlOfImages: string[] = [];
+        for (const [index, image] of images1.entries()) {
+          const uploadedUrl = await uploadMediaToFirebase(image?.path, index + 1, images1.length);
+          if (uploadedUrl) {
+            urlOfImages.push(uploadedUrl);
+          }
         }
-      }
-      const fireUtils = useFireStoreUtil();
-      const ref: any = await fireUtils.createProduct(user_id, urlOfImages, title, productType, selectedTags)
-      if (ref) {
-        ClosingModal();
-        setStateForUploadingModal({
-          ...stateForUploadingModal,
-          state: false
-        })
-        createVectorForUser(ref, title, productType, selectedTags, "")
+        let sellerId = user_id;
+        let sellerName = userData?.businessName
+        let sellerCity = userData?.city
+        let sellerState = userData?.state
+        let tags = selectedTags
+        let images = urlOfImages
+        const res = await creatingProduct({title, description, sellerName, sellerId, sellerCity, sellerState, tags, productType, price : Number(price.replace(/[^0-9.]/g, "")), images})
+        if(res.status == 200){
+          ClosingModal();
+          productsaved();
+          setStateForUploadingModal({
+            ...stateForUploadingModal,
+            state: false
+          });
+        }
       }
     } catch (error) {
       console.error("⚠️ Catch Error:", error);
@@ -131,7 +164,6 @@ const AddingProduct: React.FC<props> = ({
       dispatch(setLoader(false));
     }
   };
-
 
   const openGallery = () => {
     if (images1.length >= 3) {
@@ -145,10 +177,10 @@ const AddingProduct: React.FC<props> = ({
         height: 400,
         cropping: false,
         mediaType: 'photo',
-        multiple: allowMultiple, // true only when needed
-        maxFiles: allowMultiple ? 3 - images1.length : 1, // ensure no mismatch
-        compressImageQuality: 0.8, // reduces iOS memory crash risk
-        forceJpg: true, // prevents HEIC decoding issues
+        multiple: allowMultiple,
+        maxFiles: allowMultiple ? 3 - images1.length : 1,
+        compressImageQuality: 0.8,
+        forceJpg: true,
       }).then(async (images: Image[] | Image) => {
         const selectedFiles = Array.isArray(images) ? images : [images];
         const finalFiles = selectedFiles.slice(0, 3 - images1.length);
@@ -161,7 +193,6 @@ const AddingProduct: React.FC<props> = ({
     }
   };
 
-
   const renderItem = ({ item, index }: any) => {
     return (
       <Pressable
@@ -171,13 +202,7 @@ const AddingProduct: React.FC<props> = ({
             setShowViewer(true);
           }, 200);
         }}
-        style={[
-          styles.uploadView,
-          {
-            borderColor: "transparent",
-            marginRight: 20,
-          },
-        ]}
+        style={styles.uploadPressable}
       >
         <FastImage source={{ uri: item?.path }} style={styles.image}>
           <TouchableOpacity
@@ -199,11 +224,21 @@ const AddingProduct: React.FC<props> = ({
     setSelectedTags(prevItems => prevItems.filter(item => item !== itemToRemove));
   };
 
+  const changingPrice = (t: string) => {
+    const clean = t.replace(/^\₹/, "");
+
+    if (clean.length > 0) {
+      setPrice(`₹${clean}`);
+    } else {
+      setPrice("");
+    }
+  };
+
   const RenderItemForSelectedProduct = ({ item }: { item: any }) => {
     return (
       <View style={styles.tagItem}>
         <Text style={styles.tagText}>{item}</Text>
-        <Pressable onPress={() => { removeItem(item) }} style={styles.tagRemoveButton}>
+        <Pressable onPress={() => { removeItem(item); }} style={styles.tagRemoveButton}>
           <Image
             source={Images?.Cancel}
             style={styles.tagRemoveIcon}
@@ -214,34 +249,27 @@ const AddingProduct: React.FC<props> = ({
     );
   };
 
-
   return (
-    <View style={styles?.msgVew}>
+    <ScrollView style={styles.msgVew} showsVerticalScrollIndicator={false}>
 
-      <Pressable
-        style={{ alignSelf: 'flex-end', padding: 10, marginRight: 5 }}
-        onPress={ClosingModal}
-      >
+      <Pressable style={styles.closeBtn} onPress={ClosingModal}>
         <FastImage
           source={Images?.Cancel}
-          style={{
-            height: hp(4),
-            width: wp(4),
-          }}
+          style={styles.closeIcon}
           resizeMode="contain"
         />
       </Pressable>
 
-      <View style={{ width: '100%', alignSelf: 'center' }}>
+      <View style={styles.inputWrapper}>
         <Text style={styles.inputLabel}>Title</Text>
-        <View style={styles?.dropdown}>
+        <View style={styles.dropdown}>
           <TextInput
             blurOnSubmit={false}
             maxFontSizeMultiplier={1.5}
             placeholder={'Title'}
             multiline
             value={title}
-            style={{ fontFamily: AppFonts.Regular, fontSize: 16 }}
+            style={styles.inputText}
             onChangeText={(t: string) => setTitle(t)}
             placeholderTextColor={Colors?.DarkText}
             textAlignVertical="top"
@@ -249,23 +277,55 @@ const AddingProduct: React.FC<props> = ({
         </View>
       </View>
 
-      <View style={{ alignSelf: 'center', marginTop: hp(2), width: '100%' }}>
-        <Text style={styles.inputLabel}>Products Type</Text>
+      <View style={styles.inputWrapperMargin}>
+        <Text style={styles.inputLabel}>Description</Text>
+        <View style={styles.dropdown}>
+          <TextInput
+            blurOnSubmit={false}
+            maxFontSizeMultiplier={1.5}
+            placeholder={'Description'}
+            multiline
+            value={description}
+            style={styles.inputText}
+            onChangeText={setDescription}
+            placeholderTextColor={Colors?.DarkText}
+            textAlignVertical="top"
+          />
+        </View>
+      </View>
 
+      <View style={styles.inputWrapperMargin}>
+        <Text style={styles.inputLabel}>Products Type</Text>
         <Dropdown
           options={['Saree', 'Suits', 'Toys', 'Dinner Set', 'Crockery', 'Pants', 'Shirts']}
           selectedValue={productType}
           onValueChange={(item) => {
-            setProductType(item)
+            setProductType(item);
           }}
         />
       </View>
 
+      <View style={styles.inputWrapperMarginSmall}>
+        <Text style={styles.inputLabel}>Price</Text>
+        <View style={styles.dropdown}>
+          <TextInput
+            blurOnSubmit={false}
+            maxFontSizeMultiplier={1.5}
+            placeholder={'Price'}
+            multiline
+            value={price}
+            style={styles.inputPrice}
+            keyboardType="numeric"
+            onChangeText={changingPrice}
+            placeholderTextColor={Colors?.DarkText}
+            textAlignVertical="top"
+          />
+        </View>
+      </View>
 
-      <View style={{ alignSelf: 'center', marginTop: hp(2), width: '100%' }}>
+      <View style={styles.inputWrapperMargin}>
         <Text style={styles.inputLabel}>Products Tags</Text>
-
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+        <View style={styles.tagsRow}>
           {selectedTags.map((item, index) => (
             <RenderItemForSelectedProduct key={index} item={item} />
           ))}
@@ -277,47 +337,27 @@ const AddingProduct: React.FC<props> = ({
           barBorderColor={{ borderColor: 'black', paddingVertical: 10 }}
           alreadySelectedOptions={selectedTags}
           onValueChange={(item) => {
-            let oldItems: any = [...selectedTags, item]
-            setSelectedTags(oldItems)
+            let oldItems: any = [...selectedTags, item];
+            setSelectedTags(oldItems);
           }}
         />
       </View>
-
 
       <View>
         <FlatList
           data={images1.length < 3 ? [...images1, "upload"] : images1}
           numColumns={3}
           keyExtractor={(item, index) => index?.toString()}
-          style={{ alignSelf: 'center' }}
+          style={styles.imageList}
           showsHorizontalScrollIndicator={false}
           renderItem={({ item, index }) => {
             return item == "upload" ? (
-              <Pressable
-                key={index}
-                onPress={() => {
-                  openGallery();
-                }}
-                style={[
-                  styles.uploadView,
-                  {
-                    borderColor: 'grey',
-                  },
-                ]}
-              >
+              <Pressable key={index} onPress={openGallery} style={styles.uploadBtn}>
                 <FastImage
                   resizeMode={"contain"}
                   source={Images?.upload}
-                  style={[
-                    styles.uploadImg,
-                    {
-                      height: "40%",
-                      width: "40%",
-                      borderRadius: 0,
-                      justifyContent: "flex-end",
-                    },
-                  ]}
-                ></FastImage>
+                  style={styles.uploadImgBtn}
+                />
               </Pressable>
             ) : (
               renderItem({ item, index })
@@ -326,18 +366,13 @@ const AddingProduct: React.FC<props> = ({
         />
       </View>
 
-
       <BottomButton
         title={'Post'}
         clickable={() => {
-          setStateForUploadingModal({
-            ...stateForUploadingModal,
-            state: true
-          })
           sendingTobackend();
         }}
-        txtStyle={{ fontSize: 20 }}
-        btnStyle={{ marginTop: 20, backgroundColor : Colors?.buttonPrimaryColor }}
+        txtStyle={styles.postBtnText}
+        btnStyle={styles.postBtn}
       />
 
       {showViewer && <ShowMediaModal
@@ -350,11 +385,10 @@ const AddingProduct: React.FC<props> = ({
         <ProductUploadingModal
           data={stateForUploadingModal}
           setStateForUploadingModal={(newData: any) => {
-            setStateForUploadingModal(newData)
+            setStateForUploadingModal(newData);
           }} />
       }
-
-    </View>
+    </ScrollView>
   );
 };
 
@@ -374,24 +408,42 @@ const createStyles = (colors: any) =>
       alignItems: "center",
       alignSelf: "center",
     },
+    uploadPressable: {
+      borderColor: "transparent",
+      marginRight: 20,
+      height: 93,
+      width: 93,
+      borderWidth: 1.4,
+      borderRadius: 10,
+      borderStyle: "dashed",
+      marginTop: hp(2),
+      justifyContent: "center",
+      alignItems: "center",
+      alignSelf: "center",
+    },
+    uploadBtn: {
+      height: 93,
+      width: 93,
+      borderWidth: 1.4,
+      borderColor: 'grey',
+      borderRadius: 10,
+      borderStyle: "dashed",
+      marginTop: hp(2),
+      justifyContent: "center",
+      alignItems: "center",
+      alignSelf: "center",
+    },
+    uploadImgBtn: {
+      height: "40%",
+      width: "40%",
+      borderRadius: 0,
+      justifyContent: "flex-end",
+    },
     uploadImg: {
       height: "34%",
       width: "34%",
       resizeMode: "contain",
-
       overflow: "hidden",
-    },
-    uploadTxt: {
-      color: colors.black2,
-      fontSize: 12,
-      textAlign: "center",
-      marginTop: hp(1.5),
-    },
-    playBtn: {
-      zIndex: 9999,
-      position: "absolute",
-      top: "40%",
-      left: Platform.OS == "ios" ? "35%" : "30%",
     },
     play: { width: 25, height: 25 },
     image: {
@@ -400,80 +452,18 @@ const createStyles = (colors: any) =>
       borderRadius: 10,
       justifyContent: "flex-end",
     },
-    reason: {
-      padding: 12,
-      borderRadius: 10,
-      fontSize: 12,
-      borderWidth: 1,
-      borderColor: 'black',
-      width: "100%",
-      alignSelf: "center",
-      color: colors?.white,
-      marginTop: hp(1.2),
-    },
     msgVew: {
       width: "95%",
       borderWidth: 1,
       borderColor: 'grey',
-      shadowOffset: {
-        width: 0,
-        height: 1,
-      },
+      height: hp(50),
+      shadowOffset: { width: 0, height: 1 },
       shadowOpacity: 0.25,
       shadowRadius: 1.84,
       marginTop: hp(1.4),
       padding: 8,
       alignSelf: "center",
       borderRadius: 10,
-    },
-    picView: {
-      minHeight: hp(7),
-      width: "48%",
-      backgroundColor: colors?.black,
-      borderRadius: 10,
-      justifyContent: "center",
-      alignItems: "center",
-      marginTop: hp(1.2),
-      marginBottom: hp(2),
-    },
-    cameraIcon: {
-      height: hp(3),
-      width: hp(3),
-      resizeMode: "contain",
-    },
-    picViewTxt: {
-      color: colors?.white,
-      fontSize: hp(1.3),
-    },
-    flexView: {
-      justifyContent: "space-between",
-      flexDirection: "row",
-      alignItems: "center",
-    },
-    dropView: {
-      marginTop: hp(3.5),
-      alignSelf: "center",
-      backgroundColor: colors?.black,
-      width: "100%",
-    },
-    viewSty: {},
-    subSty: {
-      alignSelf: "center",
-      backgroundColor: colors?.black,
-      width: "100%",
-    },
-    playButtonContainer: {},
-    playIcon: {
-      width: 50,
-      height: 50,
-      tintColor: "red",
-    },
-    capturedImageStyle: {
-      height: hp(30),
-      width: "90%",
-      alignSelf: "center",
-      borderRadius: 5,
-      overflow: "visible",
     },
     removeBlock: {
       width: 20,
@@ -484,9 +474,41 @@ const createStyles = (colors: any) =>
       top: 2,
       right: 8,
     },
-    container: {
-      flex: 1,
-      backgroundColor: Colors?.PrimaryBackground,
+    closeBtn: {
+      alignSelf: 'flex-end',
+      padding: 10,
+      marginRight: 5
+    },
+    closeIcon: {
+      height: hp(4),
+      width: wp(4),
+    },
+    inputWrapper: {
+      width: '100%',
+      alignSelf: 'center',
+    },
+    inputWrapperMargin: {
+      width: '100%',
+      alignSelf: 'center',
+      marginTop: hp(2),
+    },
+    inputWrapperMarginSmall: {
+      width: '100%',
+      alignSelf: 'center',
+      marginTop: hp(0),
+    },
+    inputText: {
+      fontSize: 16,
+    },
+    inputPrice: {
+      fontFamily: AppFonts.Regular,
+      fontSize: 16,
+    },
+    inputLabel: {
+      fontFamily: AppFonts.Regular,
+      fontSize: 16,
+      marginLeft: wp(1),
+      color: Colors?.DarkText,
     },
     dropdown: {
       padding: 12,
@@ -494,42 +516,7 @@ const createStyles = (colors: any) =>
       borderColor: Colors?.buttonPrimaryColor,
       borderRadius: 8,
     },
-    scrollContainer: {
-      flex: 1
-    },
-    profileImageContainer: {
-      marginTop: 20,
-      width: 100,
-      height: 100,
-      alignSelf: 'center'
-    },
-    profileImage: {
-      width: 100,
-      height: 100,
-      alignSelf: 'center',
-      borderRadius: 10,
-      borderWidth: 1,
-      borderColor: 'grey'
-    },
-    editIcon: {
-      width: 30,
-      height: 30,
-      position: 'absolute',
-      bottom: -10,
-      right: -10
-    },
-    inputContainer: {
-      width: width * 0.9,
-      alignSelf: 'center',
-      marginTop: hp(1)
-    },
-    inputLabel: {
-      fontFamily: AppFonts.Regular,
-      fontSize: 16,
-      marginLeft: wp(1),
-      color: Colors?.DarkText
-    },
-    tagsContainer: {
+    tagsRow: {
       flexDirection: 'row',
       flexWrap: 'wrap'
     },
@@ -555,8 +542,14 @@ const createStyles = (colors: any) =>
       width: 14,
       height: 14
     },
-    bottomButton: {
-      marginBottom: hp(5),
-      marginTop: hp(5)
+    imageList: {
+      alignSelf: 'center'
+    },
+    postBtnText: {
+      fontSize: 20,
+    },
+    postBtn: {
+      marginVertical: 20,
+      backgroundColor: Colors?.buttonPrimaryColor
     }
   });

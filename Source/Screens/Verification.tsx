@@ -16,7 +16,7 @@ const VerificationScreen = () => {
     const insets = useSafeAreaInsets();
     const route: any = useRoute();
     const [otpValue, SetOtpValue] = useState('');
-    const navigation = useNavigation();
+    const navigation = useNavigation() as any
     const dispatch = useDispatch();
     const confirm = route?.params?.confimration
     const phoneNumber = route?.params?.phoneNumber
@@ -32,7 +32,6 @@ const VerificationScreen = () => {
                 phoneNumber: phoneNumber
             }
             const res : any = await creatingUserApi(data)
-            console.log("res is ---------- ", res)
             if(res?.status == 201){
                 dispatch(setUserId(res?.data?.user?._id));
                 navigation.navigate(AppRoutes?.BottomBar);

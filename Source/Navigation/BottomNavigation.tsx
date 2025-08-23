@@ -17,7 +17,7 @@ const BottomTabs = () => {
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
-        tabBarStyle: {  },
+        tabBarStyle: { backgroundColor :'rgba(233, 174, 160, 0.1)'},
       }}
     >
       <Tab.Screen

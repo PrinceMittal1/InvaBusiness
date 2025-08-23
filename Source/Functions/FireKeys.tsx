@@ -1,7 +1,8 @@
 const FireKeys = {
     BusinessUser : "BusinessUser",
     Products : "Products",
-    CustomerUser : "CustomerUser"
+    CustomerUser : "CustomerUser",
+    Comment : "Comment"
 }
 
 export default FireKeys

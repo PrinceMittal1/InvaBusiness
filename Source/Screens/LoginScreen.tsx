@@ -19,7 +19,7 @@ import { creatingUserApi } from "../Api";
 const { width, height } = Dimensions.get('window')
 const Login = () => {
     const [numberForLogin, setNumberForLogin] = useState("");
-    const navigation = useNavigation();
+    const navigation = useNavigation() as any;
      const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0;
     const dispatch = useDispatch();
     const loading = useSelector((state: any) => state.tempData.loader);

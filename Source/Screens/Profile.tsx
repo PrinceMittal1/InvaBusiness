@@ -9,13 +9,15 @@ import {
     View,
     PermissionsAndroid,
     StyleSheet,
-    ActivityIndicator
+    ActivityIndicator,
+    TextInput,
+    ScrollView
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import Dropdown from "../Components/DropDown";
 import { hp, wp } from "../Keys/dimension";
 import { useEffect, useState } from "react";
-import { useNavigation } from "@react-navigation/native";
+import { useIsFocused, useNavigation } from "@react-navigation/native";
 import Images from "../Keys/Images";
 import ImageCropPicker from "react-native-image-crop-picker";
 import BottomButton from "../Components/BottomButton";
@@ -28,7 +30,7 @@ import { setUserData, setUserId } from "../Redux/Reducers/userData";
 import Geolocation from "@react-native-community/geolocation";
 import AppFonts from "../Functions/Fonts";
 import Colors from "../Keys/colors";
-import {updatingUserApi} from "../Api"
+import { profileDetailApi, updatingUserApi } from "../Api"
 
 const { width, height } = Dimensions.get("window");
 
@@ -43,11 +45,15 @@ const Profile = () => {
         code: "PB",
         value: "Punjab"
     });
+     const [selectedBusinessType, setSelectedBusinessType] = useState('');
+    const [nameForBusiness, setNameForBusiness] = useState('')
     const [loader, setLoader] = useState(false)
     const [selectedTags, setSelectedTags] = useState([]);
-    const { user_id, userData } = useSelector((state: any) => state.userData);
-
+    const { user_id } = useSelector((state: any) => state.userData);
+    const insets = useSafeAreaInsets();
     const dispatch = useDispatch();
+    const focus = useIsFocused();
+
 
     async function reverseGeocode(lat: number, lng: number) {
         const apiKey = "YOUR_API_KEY";
@@ -89,22 +95,36 @@ const Profile = () => {
         );
     }
 
+    const gettingProfileDetail = async () => {
+        try {
+            const res = await profileDetailApi({ user_id: user_id })
+            if (res?.status == 200) {
+                setUserData(res?.data?.seller)
+                setSelectedStateCode({
+                    code: res?.data?.seller?.stateCode,
+                    value: res?.data?.seller?.state
+                });
+                setProfileImage(res?.data?.seller?.profile_picture);
+                setSelectedTags(res?.data?.seller?.products);
+                setSelectedCity(res?.data?.seller?.city);
+                setNameForBusiness(res?.data?.seller?.businessName)
+                setSelectedBusinessType(res?.data?.seller?.businessType)
+                const indianStates = State.getStatesOfCountry("IN");
+                setStates(indianStates.map(s => `${s.name} (${s.isoCode})`));
+                const citiesList = City.getCitiesOfState("IN", res?.data?.seller?.stateCode ?? "PB");
+                setCities(citiesList.map(c => c.name));
+            }
+        } catch (error) {
+        }finally{
+            setLoader(false)
+        }
+    }
+
+
     useEffect(() => {
         setLoader(true)
-        setSelectedStateCode({
-            code: userData?.stateCode,
-            value: userData?.state
-        });
-        setProfileImage(userData?.profile_picture);
-        setSelectedTags(userData?.interest);
-        setSelectedCity(userData?.city);
-        const indianStates = State.getStatesOfCountry("IN");
-        setStates(indianStates.map(s => `${s.name} (${s.isoCode})`));
-        const citiesList = City.getCitiesOfState("IN", userData?.stateCode ?? "PB");
-        setCities(citiesList.map(c => c.name));
-        getUserLocation();
-        setLoader(false)
-    }, [userData]);
+        focus && gettingProfileDetail();
+    }, [focus]);
 
     const openGallery = () => {
         try {
@@ -129,26 +149,17 @@ const Profile = () => {
             profile_picture = await fireUtils.uploadMediaToFirebase(profileImage?.path);
         }
         const ref = await updatingUserApi({
-            user_id: user_id,
-            age: null,
-            gender: null,
+            _id: user_id,
+            businessName : nameForBusiness,
+            businessType : selectedBusinessType,
             stateCode: selectedStateCode?.code,
+            products : selectedTags,
             state: selectedStateCode?.value,
             city: selectedCity,
             profile_picture: profile_picture,
-            interest: selectedTags
         })
 
-
         if (ref) {
-            dispatch(setUserData({
-                ...userData,
-                stateCode: selectedStateCode?.code,
-                state: selectedStateCode?.value,
-                city: selectedCity,
-                profile_picture: profile_picture,
-                interest: selectedTags
-            }))
             navigation.goBack();
         }
     };
@@ -205,9 +216,10 @@ const Profile = () => {
                     <ActivityIndicator size="large" color="#fff" />
                 </View>
             )}
-            <SafeAreaView style={[styles.safeArea, { marginTop: statusBarHeight }]}>
+            <View style={[styles.safeArea, {paddingTop : insets.top}]}>
                 <Header title={"Profile"} rightIcon={Images?.logout} rightClick={loggingOut} />
 
+                <ScrollView style={{flex:1}} showsVerticalScrollIndicator={false}>
                 <View style={styles.profileImageWrapper}>
                     <FastImage
                         style={styles.profileImage}
@@ -228,7 +240,29 @@ const Profile = () => {
                     </Pressable>
                 </View>
 
-                <View style={[styles.dropdownWrapper, { marginTop: hp(3) }]}>
+                <View style={{ width: width * 0.9, alignSelf: 'center', marginTop: hp(3) }}>
+                    <Text style={styles.inputLabel}>Your Business Name</Text>
+                    <View style={styles?.dropdown}>
+                        <TextInput
+                            value={nameForBusiness}
+                            placeholder="Name"
+                            placeholderTextColor={Colors?.DarkText}
+                            onChangeText={setNameForBusiness}
+                            style={{ fontFamily: AppFonts.Regular, fontSize: 16 }}
+                        />
+                    </View>
+                </View>
+
+                <View style={{ width: width * 0.9, alignSelf: 'center', marginTop: hp(1) }}>
+                    <Text style={styles.inputLabel}>Business Type</Text>
+                    <Dropdown
+                        options={['Garment Store', 'Toys Store', 'Antique Store', 'Saree Store', 'Ladies Suit Store', 'Crockery Store', 'Handloom Store']}
+                        selectedValue={selectedBusinessType}
+                        onValueChange={setSelectedBusinessType}
+                    />
+                </View>
+
+                <View style={[styles.dropdownWrapper, { marginTop: hp(1) }]}>
                     <Text style={styles.inputLabel}>Select Your state</Text>
                     <Dropdown
                         options={states}
@@ -248,7 +282,7 @@ const Profile = () => {
                 </View>
 
                 <View style={styles.dropdownWrapper}>
-                    <Text style={styles.inputLabel}>Interest</Text>
+                    <Text style={styles.inputLabel}>Products</Text>
                     <View style={styles.tagsContainer}>
                         {selectedTags?.map((item, index) => (
                             <RenderItemForSelectedProduct key={index} item={item} />
@@ -257,8 +291,6 @@ const Profile = () => {
                     <Dropdown
                         options={["Saree", "Suits", "Toy gun", "Crockery", "Pants", "Shirts"]}
                         selectedValue={""}
-                        barBorderColor={{ borderColor: "black", paddingVertical: 10 }}
-                        alreadySelectedOptions={selectedTags}
                         onValueChange={item => {
                             if (!selectedTags.includes(item)) {
                                 setSelectedTags([...selectedTags, item]);
@@ -269,8 +301,10 @@ const Profile = () => {
 
                 <View style={styles.flexSpacer} />
 
-                <BottomButton btnStyle={styles.bottomButton} title={"Continue"} clickable={ClickedOnContinue} />
-            </SafeAreaView>
+                <BottomButton btnStyle={styles.bottomButton} txtStyle={{color:'#FFFFFF'}} title={"Continue"} clickable={ClickedOnContinue} />
+
+                </ScrollView>
+            </View>
         </>
     );
 };
@@ -281,6 +315,12 @@ const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
         backgroundColor: "rgba(233, 174, 160, 0.1)"
+    },
+    dropdown: {
+        padding: 12,
+        borderWidth: 1,
+        borderColor: Colors?.buttonPrimaryColor,
+        borderRadius: 8,
     },
     profileImageWrapper: {
         marginTop: 20,
@@ -306,7 +346,6 @@ const styles = StyleSheet.create({
     dropdownWrapper: {
         width: width * 0.9,
         alignSelf: "center",
-        marginTop: hp(1)
     },
     tagsContainer: {
         flexDirection: "row",
@@ -335,7 +374,8 @@ const styles = StyleSheet.create({
     },
     bottomButton: {
         marginTop: hp(5),
-        marginBottom: hp(5)
+        marginBottom: hp(5),
+        backgroundColor:Colors?.buttonPrimaryColor,
     },
     inputLabel: {
         fontFamily: AppFonts.Regular,

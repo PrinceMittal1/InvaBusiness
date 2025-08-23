@@ -128,7 +128,7 @@ const ScreenForUserDetails = () => {
                     margin: 5,
                     flexDirection: 'row',
                     alignItems: 'center',
-                    backgroundColor: 'grey',
+                    backgroundColor: '#e0dedd',
                     borderRadius: 10,
                 }}
             >
@@ -223,7 +223,7 @@ const ScreenForUserDetails = () => {
                 <View style={{ flex: 1 }} />
 
                 <BottomButton
-                    btnStyle={{ marginBottom: hp(5), marginTop: hp(4) }}
+                    btnStyle={{ marginBottom: hp(5), marginTop: hp(4), backgroundColor : Colors?.buttonPrimaryColor }}
                     title={'Continue'}
                     clickable={ClickedOnContinue}
                 />

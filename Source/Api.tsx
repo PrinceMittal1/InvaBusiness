@@ -2,59 +2,6 @@ import axios from 'axios'
 import { apiUrl } from './env';
 
 
-interface GetProductsRequestForSeller {
-  customerUserId: string;
-  sellerId: string;
-}
-
-export const getProductsForSellerPage = async (
-  payload: GetProductsRequestForSeller
-) => {
-  try {
-    const response = await axios.post('https://getsellerproducts-ty3v52ngjq-uc.a.run.app', payload, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    return response.data;
-  } catch (error: any) {
-    throw error;
-  }
-};
-
-export const getProductsForWishlistPage = async (
-  payload: any
-) => {
-  try {
-    const response = await axios.post('https://getsavedproducts-ty3v52ngjq-uc.a.run.app', payload, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    return response.data;
-  } catch (error: any) {
-    throw error;
-  }
-};
-
-
-export const updatingUser = async (payload: any) => {
-  try {
-    const response = await axios.post('http://127.0.0.1:5001/inva-b5b22/us-central1/updateCustomerUserDetail', payload, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    return response.data;
-  } catch (error: any) {
-    throw error;
-  }
-}
-
-
-
 export const creatingUserApi = async (payload: any) => {
   try {
     const response = await axios.post(
@@ -91,10 +38,25 @@ export const updatingUserApi = async (payload: any) => {
   }
 }
 
-export const getProductsForHome = async (payload: any) => {
+export const creatingProduct = async (payload: any) => {
+  try {
+    const response = await axios.post(
+      `${apiUrl}product/create`,
+      payload, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    return response;
+  } catch (error: any) {
+    throw error;
+  }
+}
+
+export const fetchingMostPopularProduct = async (payload: any) => {
   try {
     const response = await axios.get(
-      `${apiUrl}product/all/products/for/customer`,
+      `${apiUrl}product/seller/products`,
       {
         params: payload,
         headers: { 'Content-Type': 'application/json' }
@@ -104,16 +66,13 @@ export const getProductsForHome = async (payload: any) => {
   } catch (error: any) {
     console.log("response is ----- error ", error)
   }
-};
+}
 
-export const toggleLike = async (payload: any) => {
+
+export const deleteProduct = async ({ product_id }: any) => {
   try {
-    const response = await axios.post(
-      `${apiUrl}product/like`,
-      payload, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
+    const response = await axios.delete(`${apiUrl}product/delete/${product_id}`, {
+      headers: { 'Content-Type': 'application/json' }
     });
     return response;
   } catch (error: any) {
@@ -121,18 +80,36 @@ export const toggleLike = async (payload: any) => {
   }
 };
 
-export const toggleSaved = async (payload: any) => {
+
+export const profileDetailApi = async (payload: any) => {
   try {
-    const response = await axios.post(
-      `${apiUrl}product/save`,
-      payload, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    const response = await axios.get(
+      `${apiUrl}seller/detail`,
+      {
+        params: payload,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
     return response;
   } catch (error: any) {
+    console.log("respons eis ------- error", error)
     throw error;
   }
 };
 
+
+export const editProductApi = async (productId: string, payload: any) => {
+  try {
+    const response = await axios.put(
+      `${apiUrl}product/edit/${productId}`,
+      payload,
+      {
+        headers: { "Content-Type": "application/json" }
+      }
+    );
+    return response;
+  } catch (error: any) {
+    console.log("response is ------- error", error);
+    throw error;
+  }
+};
