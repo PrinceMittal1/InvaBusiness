@@ -5,7 +5,9 @@ const AppRoutes = {
     VerificationScreen : "VerificationScreen",
     Home : "Home",
     Chat : "Chat",
-    BottomBar : "BottomBar"
+    BottomBar : "BottomBar",
+    Terms : "Terms",
+    PrivacyPolicy : "PrivacyPolicy"
 }
 
 export default AppRoutes

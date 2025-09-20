@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
   optionSelected : {
     padding: 12,
     borderBottomWidth: 1,
-    backgroundColor:'red',
+    backgroundColor: Colors?.buttonPrimaryColor,
     borderBottomColor: '#eee',
   },
 });

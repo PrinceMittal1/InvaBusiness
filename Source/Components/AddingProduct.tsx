@@ -42,7 +42,7 @@ interface props {
   fetchingAllFeed?: any;
   ClickedOnPost?: any;
   ClosingModal?: any;
-  productsaved ?: any;
+  productsaved?: any;
 }
 const { width, height } = Dimensions.get('window');
 
@@ -148,8 +148,8 @@ const AddingProduct: React.FC<props> = ({
         let sellerState = userData?.state
         let tags = selectedTags
         let images = urlOfImages
-        const res = await creatingProduct({title, description, sellerName, sellerId, sellerCity, sellerState, tags, productType, price : Number(price.replace(/[^0-9.]/g, "")), images})
-        if(res.status == 200){
+        const res = await creatingProduct({ title, description, sellerName, sellerId, sellerCity, sellerState, tags, productType, price: Number(price.replace(/[^0-9.]/g, "")), images })
+        if (res.status == 200) {
           ClosingModal();
           productsaved();
           setStateForUploadingModal({
@@ -334,11 +334,14 @@ const AddingProduct: React.FC<props> = ({
         <Dropdown
           options={['Saree for women', 'Suits for ladies', 'Toy gun', 'Dinner Set red', 'Crockery glasses', 'Pants for men', 'Shirts black']}
           selectedValue={''}
-          barBorderColor={{ borderColor: 'black', paddingVertical: 10 }}
           alreadySelectedOptions={selectedTags}
           onValueChange={(item) => {
             let oldItems: any = [...selectedTags, item];
             setSelectedTags(oldItems);
+          }}
+          removeItem={(item: any) => {
+            const newArr = selectedTags.filter((items: any) => items !== item);
+            setSelectedTags(newArr)
           }}
         />
       </View>

@@ -240,7 +240,7 @@ const Chat = () => {
             >
                 <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                     <>
-                        <Header title={'Search'} showbackIcon={true} />
+                        <Header title={route?.params?.customerDisplayName} showbackIcon={true} />
 
                         <FlatList
                             style={{ flex: 1 }}

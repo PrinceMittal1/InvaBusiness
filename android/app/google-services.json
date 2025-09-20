@@ -8,26 +8,34 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:505647175641:android:b62592dcb6be718406ebc8",
+        "mobilesdk_app_id": "1:505647175641:android:2f801207e6d312ee06ebc8",
         "android_client_info": {
-          "package_name": "com.inva"
+          "package_name": "com.invaID"
         }
       },
       "oauth_client": [
         {
-          "client_id": "505647175641-kjrqsbk2vaasl5upfh93ifqr10mt2u4h.apps.googleusercontent.com",
+          "client_id": "505647175641-3avrs73p12njj2uvrpjvrcq302mp500k.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.inva",
+            "package_name": "com.invaID",
             "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
           }
         },
         {
-          "client_id": "505647175641-kocu17493ckl21c3ddhcqjua7k9icqaa.apps.googleusercontent.com",
+          "client_id": "505647175641-l2gq4c1rtprb3rpgl10j7pjijju61eup.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.inva",
+            "package_name": "com.invaID",
             "certificate_hash": "4b110114b1ee6ba36d13f1c99f00feeb43665037"
+          }
+        },
+        {
+          "client_id": "505647175641-onkl6q0pj9uh4csskt5gop9b9ksdh8oo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.invaID",
+            "certificate_hash": "7e631ac20ed259b54531d2f78bd0a56867bd6870"
           }
         },
         {
@@ -66,6 +74,14 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "505647175641-9qhg3mi7gvhu0u5m6hjt6vnpsnigg4ku.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.invabusiness",
+            "certificate_hash": "cc69b65c4d12f8c6c9e1c4830c7d386acb7763e8"
+          }
+        },
         {
           "client_id": "505647175641-kb9r97f3rohqs0dbt84ajg5kbae6906h.apps.googleusercontent.com",
           "client_type": 1,

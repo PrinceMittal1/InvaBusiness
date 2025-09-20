@@ -13,7 +13,7 @@ import { wp } from "../Keys/dimension";
 import { fetchingMostPopularProduct } from "../Api";
 import CommentModal from "../Components/Comments/CommentModal";
 
-const PAGE_SIZE = 1;
+const PAGE_SIZE = 5;
 
 const Products = () => {
   const [allProducts, setAllProducts] = useState<any[]>([]);
@@ -33,12 +33,12 @@ const Products = () => {
   const insets = useSafeAreaInsets();
 
   const gettingProducts = useCallback(
-    async (isInitial = false) => {
+    async (isInitial = false, selectedFilterS : string) => {
       if (loading || (isEnd && !isInitial)) return;
       setLoading(true);
       try {
         let seller_id = user_id;
-        let filter = selectedFilter || "newest";
+        let filter = selectedFilterS == 'Most Popular' ? 'mostPopular' : selectedFilterS == 'All' ? 'all' : "newest";
 
         const res = await fetchingMostPopularProduct({
           seller_id,
@@ -48,6 +48,8 @@ const Products = () => {
         });
 
         const newProducts = res?.data?.products || [];
+
+        console.log("filters are ------ ",filter, "----- ", newProducts?.[0]?.title, "======", isInitial)
 
         if (isInitial) {
           setAllProducts(newProducts);
@@ -64,7 +66,7 @@ const Products = () => {
         setLoading(false);
       }
     },
-    [user_id, page, loading, isEnd, selectedFilter]
+    [user_id, page, loading, isEnd]
   );
 
 
@@ -92,7 +94,7 @@ const Products = () => {
   };
 
   useEffect(() => {
-    gettingProducts(true);
+    gettingProducts(true, selectedFilter);
   }, [selectedFilter]);
 
   const RenderItem = ({ item, index }: any) => {
@@ -146,7 +148,7 @@ const Products = () => {
                 setSelectedFilter(val);
                 setIsEnd(false);
                 setPage(1);
-                gettingProducts(true);
+                gettingProducts(true, val);
               }}
             />
           )}
@@ -157,7 +159,7 @@ const Products = () => {
               <Text style={{ textAlign: "center", margin: 10 }}>No more products</Text>
             ) : null
           }
-          onEndReached={() => gettingProducts(false)}
+          onEndReached={() => gettingProducts(false, selectedFilter)}
           onEndReachedThreshold={0.5}
         />
 

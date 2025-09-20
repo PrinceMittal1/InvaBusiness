@@ -11,6 +11,8 @@ import Home from "../Screens/Home";
 import BottomTabs from "./BottomNavigation";
 import Chat from "../Screens/Chat";
 import VerificationScreen from "../Screens/Verification";
+import Terms from "../Screens/Terms";
+import PrivacyPolicy from "../Screens/PrivacyPolicy";
 
 const MainStack = () => {
     const Stack = createNativeStackNavigator();
@@ -24,6 +26,8 @@ const MainStack = () => {
                 <Stack.Screen name={keys.BottomBar} component={BottomTabs} />
                 <Stack.Screen name={keys.Chat} component={Chat} />
                 <Stack.Screen name={keys.VerificationScreen} component={VerificationScreen} />
+                <Stack.Screen name={keys?.PrivacyPolicy} component={PrivacyPolicy} />
+                <Stack.Screen name={keys?.Terms} component={Terms} />
             </Stack.Navigator>
             {loading && <Loader />}</>
     )

@@ -14,6 +14,7 @@ import Colors from "../Keys/colors";
 import AppFonts from "../Functions/Fonts";
 import FastImage from "@d11/react-native-fast-image";
 import { creatingUserApi } from "../Api";
+import { FirebaseApp, getApps, initializeApp } from "firebase/app"; 
 
 
 const { width, height } = Dimensions.get('window')
@@ -38,8 +39,10 @@ const Login = () => {
             setLoader(false)
             return
         }
+        console.log("numbr is -- ", numberForLogin)
         try {
             const confirmation: any = await auth().signInWithPhoneNumber(`+91${numberForLogin}`);
+               console.log("numbr is -- confirmation", confirmation)
             navigation.navigate(AppRoutes?.VerificationScreen, { confimration: confirmation, phoneNumber: numberForLogin  })
         } catch (error) {
             console.log('Phone Sign-In Error:', error);
@@ -140,6 +143,19 @@ const Login = () => {
                     <Pressable onPress={onGoogleButtonPress} style={styles.googleButton}>
                         <FastImage source={Images?.googleLogo} style={styles.googleIcon} />
                         <Text style={styles.googleButtonText}>Continue with Google</Text>
+                    </Pressable>
+                </View>
+
+
+                <View style={{position:'absolute', bottom:wp(10), alignSelf:'center', flexDirection:'row', justifyContent:'space-between', alignItems:'center'}}>
+                    <Pressable onPress={()=>navigation.navigate(AppRoutes?.Terms)}>
+                        <Text style={{textDecorationLine:'underline', textDecorationColor:'black', fontSize:14, fontFamily:AppFonts.Regular}}>Term & Condition</Text>
+                    </Pressable>
+
+                    <Text style={{fontSize:14, fontFamily:AppFonts.Regular, marginHorizontal:wp(1.5)}}>&</Text>
+
+                    <Pressable onPress={()=>navigation.navigate(AppRoutes?.PrivacyPolicy)}>
+                        <Text style={{textDecorationLine:'underline', textDecorationColor:'black', fontSize:14, fontFamily:AppFonts.Regular}}>Privacy Policy</Text>
                     </Pressable>
                 </View>
             </SafeAreaView>

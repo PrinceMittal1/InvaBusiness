@@ -1,4 +1,4 @@
-import { Dimensions, FlatList, Image, Platform, Pressable, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TextInput, View } from "react-native"
+import { Dimensions, FlatList, Image, PermissionsAndroid, Platform, Pressable, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TextInput, View } from "react-native"
 import Header from "../Components/Header"
 import { hp, wp } from "../Keys/dimension";
 import Dropdown from "../Components/DropDown";
@@ -18,6 +18,7 @@ import { setLoader } from "../Redux/Reducers/tempData";
 import { updatingUserApi } from "../Api";
 import AppRoutes from "../Routes/AppRoutes";
 import { setUserData } from "../Redux/Reducers/userData";
+import Geolocation from "@react-native-community/geolocation";
 
 
 const { width, height } = Dimensions.get('window')
@@ -34,6 +35,7 @@ const ScreenForUserDetails = () => {
         value: 'Punjab'
     });
     const [profileImage, setProfileImage] = useState<any>(null);
+    const [latLong, setLatLong] = useState<any>(null)
     const [cities, setCities] = useState<string[]>([]);
     const [selectedCity, setSelectedCity] = useState('Kharar');
     const navigation = useNavigation();
@@ -61,10 +63,10 @@ const ScreenForUserDetails = () => {
     const updatingData = (profile_picture: string) => {
         dispatch(setUserData({
             _id: user_id,
-            businessName : nameForBusiness,
-            businessType : selectedBusinessType,
+            businessName: nameForBusiness,
+            businessType: selectedBusinessType,
             stateCode: selectedStateCode?.code,
-            products : selectedProducts,
+            products: selectedProducts,
             state: selectedStateCode?.value,
             city: selectedCity,
             profile_picture: profile_picture,
@@ -80,13 +82,15 @@ const ScreenForUserDetails = () => {
         }
         const ref = await updatingUserApi({
             _id: user_id,
-            businessName : nameForBusiness,
-            businessType : selectedBusinessType,
+            businessName: nameForBusiness,
+            businessType: selectedBusinessType,
             stateCode: selectedStateCode?.code,
-            products : selectedProducts,
+            products: selectedProducts,
             state: selectedStateCode?.value,
             city: selectedCity,
             profile_picture: profile_picture,
+            latitude : String(latLong?.latitude) ?? '',
+            longtitude : String(latLong?.longtitude) ?? ''
         })
 
         if (ref?.status == 200) {
@@ -117,6 +121,55 @@ const ScreenForUserDetails = () => {
         } catch (error: any) {
             console.log("Error opening picker", error);
         }
+    };
+
+    async function reverseGeocode(lat: number, lng: number) {
+        const apiKey = "AIzaSyDK1ouABQADC7bV9YrQt319jf4LVHmOfeQ";
+        const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`;
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            const components = data.results[0].address_components;
+            const getComponent = (type: string) =>
+                components.find((c: any) => c.types.includes(type))?.long_name;
+            const city = getComponent("locality") || getComponent("administrative_area_level_2");
+            const state = getComponent("administrative_area_level_1");
+            setSelectedCity(city)
+            const match = states.find(s => s.toLowerCase().includes(state.toLowerCase()));
+            if (!match) return null;
+            const regex = /(.*)\s\((.*)\)/;
+            const [, name, code] = match.match(regex) || [];
+            setSelectedStateCode({
+                code : code,
+                value : name
+            })
+            setLatLong({
+                latitude : lat,
+                longtitude : lng
+            })
+        } catch (err) {
+            console.error("Geocoding error:", err);
+        }
+    }
+
+    const saveSellerLocation = async () => {
+        if (Platform.OS === "android") {
+            const granted = await PermissionsAndroid.request(
+                PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+            );
+            if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+                console.warn("Location permission denied");
+                return;
+            }
+        }
+        Geolocation.getCurrentPosition(
+            position => {
+                const { latitude, longitude } = position.coords;
+                reverseGeocode(28.7041, 77.1025);
+            },
+            error => { },
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+        );
     };
 
     const RenderItemForSelectedProduct = ({ item }: { item: any }) => {
@@ -197,8 +250,17 @@ const ScreenForUserDetails = () => {
                             let oldItems: any = [...selectedProducts, item]
                             setSelectedProducts(oldItems)
                         }}
+                        alreadySelectedOptions={selectedProducts}
+                        removeItem={(item: any) => {
+                            const newArr = selectedProducts.filter((items: any) => items !== item);
+                            setSelectedProducts(newArr)
+                        }}
                     />
                 </View>
+
+                <Pressable onPress={saveSellerLocation} style={[styles?.dropdown, { alignSelf: 'flex-start', marginTop: hp(1), marginLeft: wp(5) }]}>
+                    <Text style={styles.inputLabel}>Get Your Current Location</Text>
+                </Pressable>
 
                 <View style={{ width: width * 0.9, alignSelf: 'center', marginTop: hp(1) }}>
                     <Text style={styles.inputLabel}>Select Your state</Text>
@@ -223,13 +285,11 @@ const ScreenForUserDetails = () => {
                 <View style={{ flex: 1 }} />
 
                 <BottomButton
-                    btnStyle={{ marginBottom: hp(5), marginTop: hp(4), backgroundColor : Colors?.buttonPrimaryColor }}
+                    btnStyle={{ marginBottom: hp(5), marginTop: hp(4), backgroundColor: Colors?.buttonPrimaryColor }}
                     title={'Continue'}
                     clickable={ClickedOnContinue}
                 />
             </ScrollView>
-
-
 
         </SafeAreaView>
     )

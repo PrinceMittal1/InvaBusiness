@@ -13,8 +13,10 @@ export const creatingUserApi = async (payload: any) => {
         },
       }
     );
+          console.log("res is verfification is confirm -- response",response)
     return response;
   } catch (e: any) {
+    console.log("res is verfification is confirm -- e",e)
     if (axios.isAxiosError(e)) {
       return [e.response?.status, e.response?.data];
     } else {
@@ -111,5 +113,34 @@ export const editProductApi = async (productId: string, payload: any) => {
   } catch (error: any) {
     console.log("response is ------- error", error);
     throw error;
+  }
+};
+
+
+export const gettingPrivacyPolicy = async () => {
+  try {
+    const response = await axios.get(
+      `${apiUrl}content/inva-business/privacy_policy`,
+      {
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
+    return response;
+  } catch (error: any) {
+    console.log("response is ----- profile  ", error)
+  }
+};
+
+export const gettingTerms = async () => {
+  try {
+    const response = await axios.get(
+      `${apiUrl}content/inva-business/terms_conditions`,
+      {
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
+    return response;
+  } catch (error: any) {
+    console.log("response is ----- profile  ", error)
   }
 };

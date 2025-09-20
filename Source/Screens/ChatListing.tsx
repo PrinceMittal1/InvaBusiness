@@ -19,19 +19,19 @@ const ChatListing = () => {
 
 
     const gettingAllChats = async () => {
-        console.log("--------------   1", user_id)
         const result = await fireUtils?.gettingAllChats(user_id);
-console.log("--------------  2", result)
         if (result) {
             setAllChats(result)
         }
     }
 
+    console.log("bjbvjhbvj", allChat?.[0]?.customer_name)
+
 
     useEffect(() => {
         if (focus) gettingAllChats();
 
-        
+
     }, [focus])
 
     const RenderItem = ({ item, index }: any) => {
@@ -39,12 +39,12 @@ console.log("--------------  2", result)
             <Pressable onPress={() => {
                 navigation.navigate(AppRoutes?.Chat, {
                     user_id: item?.sellerId,
-                    customerId : item?.customerId,
-                    sellerDisplayName: item?.business_name
+                    customerId: item?.customerId,
+                    customerDisplayName: item?.customer_name
                 })
-            }} style={{ backgroundColor: 'grey', flexDirection: 'row', alignItems: 'center', padding: 5, marginTop: 10, borderRadius: 5 }}>
+            }} style={{ backgroundColor: "rgba(128, 128, 128, 0.5)", flexDirection: 'row', alignItems: 'center', padding: 5, marginTop: 10, borderRadius: 5 }}>
                 <View style={{ flex: 1 }}>
-                    <FastImage source={{ uri: `${item?.customer_picture}` }} style={{ width: wp(12), height: wp(12), borderRadius: 25 }} resizeMode="contain" />
+                    <FastImage source={{ uri: `${item?.customer_profile}` }} style={{ width: wp(12), height: wp(12), borderRadius: 25 }} resizeMode="contain" />
                 </View>
 
                 <View style={{ flex: 7, marginLeft: wp(5) }}>

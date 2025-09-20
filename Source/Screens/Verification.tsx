@@ -32,6 +32,7 @@ const VerificationScreen = () => {
                 phoneNumber: phoneNumber
             }
             const res : any = await creatingUserApi(data)
+            
             if(res?.status == 201){
                 dispatch(setUserId(res?.data?.user?._id));
                 navigation.navigate(AppRoutes?.BottomBar);
