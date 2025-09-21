@@ -230,7 +230,7 @@ const EditingProductModal = ({ data, onClosePress, callApiAgain }: any) => {
 
                     <View style={styles.inputWrapper}>
                         <Text style={styles.inputLabel}>Title</Text>
-                        <View style={styles.dropdown}>
+                        <View style={[styles.dropdown]}>
                             <TextInput
                                 blurOnSubmit={false}
                                 maxFontSizeMultiplier={1.5}
@@ -240,7 +240,6 @@ const EditingProductModal = ({ data, onClosePress, callApiAgain }: any) => {
                                 style={styles.inputText}
                                 onChangeText={(t: string) => setTitle(t)}
                                 placeholderTextColor={Colors?.DarkText}
-                                textAlignVertical="top"
                             />
                         </View>
                     </View>
@@ -257,7 +256,6 @@ const EditingProductModal = ({ data, onClosePress, callApiAgain }: any) => {
                                 style={styles.inputText}
                                 onChangeText={setDescription}
                                 placeholderTextColor={Colors?.DarkText}
-                                textAlignVertical="top"
                             />
                         </View>
                     </View>
@@ -279,15 +277,12 @@ const EditingProductModal = ({ data, onClosePress, callApiAgain }: any) => {
                         <View style={styles.dropdown}>
                             <TextInput
                                 blurOnSubmit={false}
-                                maxFontSizeMultiplier={1.5}
                                 placeholder={'Price'}
-                                multiline
                                 value={price}
-                                style={styles.inputPrice}
+                                style={[styles.inputPrice]}
                                 keyboardType="numeric"
                                 onChangeText={changingPrice}
                                 placeholderTextColor={Colors?.DarkText}
-                                textAlignVertical="top"
                             />
                         </View>
                     </View>
@@ -383,9 +378,10 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     dropdown: {
-        padding: 12,
+        paddingHorizontal: 12,
+        height:wp(12),
         borderWidth: 1,
-        marginTop: 10,
+        justifyContent:'center',
         borderColor: Colors?.buttonPrimaryColor,
         borderRadius: 8,
     },
@@ -455,8 +451,9 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     inputPrice: {
-        fontFamily: AppFonts.Regular,
         fontSize: 16,
+        height:wp(12),
+        alignItems:'center'
     },
     inputLabel: {
         fontFamily: AppFonts.Regular,

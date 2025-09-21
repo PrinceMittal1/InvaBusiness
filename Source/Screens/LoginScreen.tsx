@@ -14,25 +14,27 @@ import Colors from "../Keys/colors";
 import AppFonts from "../Functions/Fonts";
 import FastImage from "@d11/react-native-fast-image";
 import { creatingUserApi } from "../Api";
-import { FirebaseApp, getApps, initializeApp } from "firebase/app"; 
-
+import { FirebaseApp, getApps, initializeApp } from "firebase/app";
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { width, height } = Dimensions.get('window')
 const Login = () => {
     const [numberForLogin, setNumberForLogin] = useState("");
     const navigation = useNavigation() as any;
-     const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0;
+    const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0;
     const dispatch = useDispatch();
     const loading = useSelector((state: any) => state.tempData.loader);
-     const { user_id } = useSelector((state: any) => state.userData);
-     const [loader, setLoader] = useState(false)
+    const { user_id } = useSelector((state: any) => state.userData);
+    const [loader, setLoader] = useState(false)
+    const insets = useSafeAreaInsets();
 
     GoogleSignin.configure({
         webClientId:
             "505647175641-pt780qgtf1folf9e73nk9r17mrf5l1ib.apps.googleusercontent.com",
     });
 
-   const signInWithPhoneNumber = async () => {
+    const signInWithPhoneNumber = async () => {
         setLoader(true)
         if (!numberForLogin.trim() || numberForLogin.length != 10) {
             Alert.alert("Add phone number of 10 digit")
@@ -42,8 +44,8 @@ const Login = () => {
         console.log("numbr is -- ", numberForLogin)
         try {
             const confirmation: any = await auth().signInWithPhoneNumber(`+91${numberForLogin}`);
-               console.log("numbr is -- confirmation", confirmation)
-            navigation.navigate(AppRoutes?.VerificationScreen, { confimration: confirmation, phoneNumber: numberForLogin  })
+            console.log("numbr is -- confirmation", confirmation)
+            navigation.navigate(AppRoutes?.VerificationScreen, { confimration: confirmation, phoneNumber: numberForLogin })
         } catch (error) {
             console.log('Phone Sign-In Error:', error);
         }
@@ -65,12 +67,12 @@ const Login = () => {
                 const additionalUserInfo: any = res.additionalUserInfo ?? {};
                 if (additionalUserInfo?.profile?.email) {
                     let data = {
-                        profile_picture : additionalUserInfo?.profile?.picture,
-                        name : additionalUserInfo?.profile?.name,
-                        email : additionalUserInfo?.profile?.email
+                        profile_picture: additionalUserInfo?.profile?.picture,
+                        name: additionalUserInfo?.profile?.name,
+                        email: additionalUserInfo?.profile?.email
                     }
-                    const res : any = await creatingUserApi(data)
-                    if(res?.status == 201){
+                    const res: any = await creatingUserApi(data)
+                    if (res?.status == 201) {
                         dispatch(setUserId(res?.data?.user?._id));
                         navigation.replace(AppRoutes?.BottomBar);
                     }
@@ -105,60 +107,63 @@ const Login = () => {
                     <ActivityIndicator size="large" color="#fff" />
                 </View>
             )}
-            <SafeAreaView style={[styles.safeArea, { marginTop: statusBarHeight }]}>
-                <View style={styles.logoWrapper}>
-                    <Image source={Images.logoForInva} style={styles.logo} resizeMode="contain" />
-                </View>
-
-                <View style={styles.welcomeWrapper}>
-                    <Text style={styles.welcomeTitle}>Welcome to Inva</Text>
-                    <Text style={styles.welcomeSubtitle}>Sign in to explore</Text>
-                </View>
-
-                <View style={styles.card}>
-                    <Text style={styles.label}>Phone Number</Text>
-                    <View style={styles.inputWrapper}>
-                        <TextInput
-                            value={numberForLogin}
-                            placeholder="Phone Number"
-                            placeholderTextColor={Colors?.DarkText}
-                            maxLength={10}
-                            style={styles.input}
-                            onChangeText={setNumberForLogin}
-                            onSubmitEditing={signInWithPhoneNumber}
-                            keyboardType="numeric"
-                        />
+            <View style={{ flex: 1,  paddingTop: insets.top, paddingBottom: insets.bottom }}>
+                <KeyboardAwareScrollView style={{ flexGrow: 1,}}>
+                    <View style={styles.logoWrapper}>
+                        <Image source={Images.logoForInva} style={styles.logo} resizeMode="contain" />
                     </View>
 
-                    <Pressable onPress={signInWithPhoneNumber} style={styles.submitButton}>
-                        <Text style={styles.submitButtonText}>Submit</Text>
-                    </Pressable>
-
-                    <View style={styles.orCircle}>
-                        <Text>OR</Text>
+                    <View style={styles.welcomeWrapper}>
+                        <Text style={styles.welcomeTitle}>Welcome to Inva</Text>
+                        <Text style={styles.welcomeSubtitle}>Sign in to explore</Text>
                     </View>
-                </View>
 
-                <View style={styles.socialCard}>
-                    <Pressable onPress={onGoogleButtonPress} style={styles.googleButton}>
-                        <FastImage source={Images?.googleLogo} style={styles.googleIcon} />
-                        <Text style={styles.googleButtonText}>Continue with Google</Text>
+                    <View style={styles.card}>
+                        <Text style={styles.label}>Phone Number</Text>
+                        <View style={styles.inputWrapper}>
+                            <TextInput
+                                value={numberForLogin}
+                                placeholder="Phone Number"
+                                placeholderTextColor={Colors?.DarkText}
+                                maxLength={10}
+                                style={styles.input}
+                                onChangeText={setNumberForLogin}
+                                onSubmitEditing={signInWithPhoneNumber}
+                                keyboardType="numeric"
+                            />
+                        </View>
+
+                        <Pressable onPress={signInWithPhoneNumber} style={styles.submitButton}>
+                            <Text style={styles.submitButtonText}>Submit</Text>
+                        </Pressable>
+
+                        <View style={styles.orCircle}>
+                            <Text>OR</Text>
+                        </View>
+                    </View>
+
+                    <View style={styles.socialCard}>
+                        <Pressable onPress={onGoogleButtonPress} style={styles.googleButton}>
+                            <FastImage source={Images?.googleLogo} style={styles.googleIcon} />
+                            <Text style={styles.googleButtonText}>Continue with Google</Text>
+                        </Pressable>
+                    </View>
+
+
+
+                </KeyboardAwareScrollView>
+                <View style={{ alignSelf: 'center', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom:10 }}>
+                    <Pressable onPress={() => navigation.navigate(AppRoutes?.Terms)}>
+                        <Text style={{ textDecorationLine: 'underline', textDecorationColor: 'black', fontSize: 14, fontFamily: AppFonts.Regular }}>Term & Condition</Text>
+                    </Pressable>
+
+                    <Text style={{ fontSize: 14, fontFamily: AppFonts.Regular, marginHorizontal: wp(1.5) }}>&</Text>
+
+                    <Pressable onPress={() => navigation.navigate(AppRoutes?.PrivacyPolicy)}>
+                        <Text style={{ textDecorationLine: 'underline', textDecorationColor: 'black', fontSize: 14, fontFamily: AppFonts.Regular }}>Privacy Policy</Text>
                     </Pressable>
                 </View>
-
-
-                <View style={{position:'absolute', bottom:wp(10), alignSelf:'center', flexDirection:'row', justifyContent:'space-between', alignItems:'center'}}>
-                    <Pressable onPress={()=>navigation.navigate(AppRoutes?.Terms)}>
-                        <Text style={{textDecorationLine:'underline', textDecorationColor:'black', fontSize:14, fontFamily:AppFonts.Regular}}>Term & Condition</Text>
-                    </Pressable>
-
-                    <Text style={{fontSize:14, fontFamily:AppFonts.Regular, marginHorizontal:wp(1.5)}}>&</Text>
-
-                    <Pressable onPress={()=>navigation.navigate(AppRoutes?.PrivacyPolicy)}>
-                        <Text style={{textDecorationLine:'underline', textDecorationColor:'black', fontSize:14, fontFamily:AppFonts.Regular}}>Privacy Policy</Text>
-                    </Pressable>
-                </View>
-            </SafeAreaView>
+            </View>
         </>
     )
 }

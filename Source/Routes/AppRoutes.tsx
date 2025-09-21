@@ -7,7 +7,8 @@ const AppRoutes = {
     Chat : "Chat",
     BottomBar : "BottomBar",
     Terms : "Terms",
-    PrivacyPolicy : "PrivacyPolicy"
+    PrivacyPolicy : "PrivacyPolicy",
+    EditProfile  : "EditProfile"
 }
 
 export default AppRoutes

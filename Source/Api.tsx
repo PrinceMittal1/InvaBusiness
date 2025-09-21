@@ -99,6 +99,18 @@ export const profileDetailApi = async (payload: any) => {
   }
 };
 
+export const deleteUser = async (payload: any) => {
+  try {
+    const response = await axios.delete(`${apiUrl}seller/delete`, {
+      headers: { 'Content-Type': 'application/json' },
+      data: payload
+    });
+    return response;
+  } catch (error: any) {
+    console.log("response is ----- delete ", error);
+  }
+};
+
 
 export const editProductApi = async (productId: string, payload: any) => {
   try {

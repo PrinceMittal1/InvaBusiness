@@ -89,18 +89,12 @@ const Home = () => {
       <View
         style={{
           flex: 1,
-          backgroundColor: "rgba(233, 174, 160, 0.1)",
           paddingTop: insets.top,
         }}
       >
-        <Header title={"Home"} />
-
-        <FlatList
-          data={allProducts}
-          renderItem={RenderItem}
-          keyExtractor={(item, index) => `${item._id}-${index}`}
-          ListHeaderComponent={() =>
-            showPicker ? (
+        <Header title={"Home"} showbackIcon={false}/>
+        {
+          showPicker ? (
               <AddingProduct
                 ClosingModal={() => setShowPicker(false)}
                 productsaved={() => fetchingHomeProduct(1, false)}
@@ -130,14 +124,19 @@ const Home = () => {
                 </Text>
               </Pressable>
             )
-          }
+        }
+
+        <FlatList
+          data={allProducts}
+          renderItem={RenderItem}
+          keyExtractor={(item, index) => `${item._id}-${index}`}
           ListFooterComponent={
             loading ? (
               <ActivityIndicator size="small" color="blue" style={{ margin: 10 }} />
             ) : null
           }
           onEndReached={loadMore}
-          onEndReachedThreshold={0.5} // triggers when 50% before bottom
+          onEndReachedThreshold={0.5}
         />
       </View>
       {showComment?.state && (

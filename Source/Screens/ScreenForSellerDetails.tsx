@@ -19,6 +19,7 @@ import { updatingUserApi } from "../Api";
 import AppRoutes from "../Routes/AppRoutes";
 import { setUserData } from "../Redux/Reducers/userData";
 import Geolocation from "@react-native-community/geolocation";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 
 const { width, height } = Dimensions.get('window')
@@ -41,6 +42,7 @@ const ScreenForUserDetails = () => {
     const navigation = useNavigation();
     const ageOptions = Array.from({ length: 89 }, (_, i) => (i + 12).toString());
     const dispatch = useDispatch();
+    const insets = useSafeAreaInsets();
 
     useEffect(() => {
         const indianStates = State.getStatesOfCountry('IN');
@@ -198,7 +200,7 @@ const ScreenForUserDetails = () => {
     };
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: 'white', marginTop: (statusBarHeight + 0) }}>
+        <View style={{ flex: 1, backgroundColor: 'white', paddingTop: insets?.top, paddingBottom:insets.bottom }}>
             <Header title={"Details"} />
 
             <ScrollView style={{ flex: 1 }}>
@@ -282,16 +284,17 @@ const ScreenForUserDetails = () => {
                     />
                 </View>
 
-                <View style={{ flex: 1 }} />
+            </ScrollView>
+
+                   
 
                 <BottomButton
-                    btnStyle={{ marginBottom: hp(5), marginTop: hp(4), backgroundColor: Colors?.buttonPrimaryColor }}
+                    btnStyle={{ marginBottom: wp(10), marginTop: hp(4), backgroundColor: Colors?.buttonPrimaryColor }}
                     title={'Continue'}
                     clickable={ClickedOnContinue}
                 />
-            </ScrollView>
 
-        </SafeAreaView>
+        </View>
     )
 }
 
@@ -304,8 +307,10 @@ const styles = StyleSheet.create({
         backgroundColor: Colors?.PrimaryBackground,
     },
     dropdown: {
-        padding: 12,
+        paddingHorizontal: 12,
+        height:wp(12),
         borderWidth: 1,
+        justifyContent:'center',
         borderColor: Colors?.buttonPrimaryColor,
         borderRadius: 8,
     },

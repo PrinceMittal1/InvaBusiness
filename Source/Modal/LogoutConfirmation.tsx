@@ -6,7 +6,7 @@ import Images from '../Keys/Images';
 import Colors from "../Keys/colors";
 
 
-const DeleteConfirmation = ({message, onClosePress, visible, confimation} : any) =>{
+const LogoutConfirmation = ({onClosePress, visible, confimation} : any) =>{
     return(
         <Modal
             transparent
@@ -32,25 +32,16 @@ const DeleteConfirmation = ({message, onClosePress, visible, confimation} : any)
                             />
                         </Pressable>
 
-
                         <View style={{ alignItems:'center', marginHorizontal:wp(10)}}>
-                            <FastImage source={Images?.delete} style={{width:wp(20), height:wp(20)}}/>
-                            <Text style={{textAlign:'center', fontSize:20, color:Colors?.DarkText, marginTop:hp(2)}}>{message ?? 'Are you want to delete this product'}</Text>
+                            <FastImage source={Images?.logout} style={{width:wp(20), height:wp(20)}}/>
+                            <Text style={{textAlign:'center', fontSize:20, color:Colors?.DarkText, marginTop:hp(2)}}>{'Are you sure you want to logout'}</Text>
                         </View>
 
-                        
                         <BottomButton
-                            title={'Delete'}
+                            title={'Logout'}
                             clickable={confimation}
                             txtStyle={{ fontSize: 20, color:'#FFFFFF' }}
                             btnStyle={{ marginTop: 20, backgroundColor: Colors?.buttonPrimaryColor, width: wp(80) }}
-                        />
-
-                        <BottomButton
-                            title={'Cancel'}
-                            clickable={onClosePress}
-                            txtStyle={{ fontSize: 20, color:'#FFFFFF' }}
-                            btnStyle={{ marginTop: 20,  backgroundColor: Colors?.buttonPrimaryColor, width: wp(80) }}
                         />
                     </View>
                 </View>
@@ -59,7 +50,7 @@ const DeleteConfirmation = ({message, onClosePress, visible, confimation} : any)
     )
 }
 
-export default DeleteConfirmation
+export default LogoutConfirmation
 
 const styles = StyleSheet.create({
     modalBackground: {

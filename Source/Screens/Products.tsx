@@ -143,6 +143,7 @@ const Products = () => {
                 width: wp(35),
                 alignSelf: "flex-end",
                 marginRight: wp(5),
+                marginTop:10
               }}
               onValueChange={(val) => {
                 setSelectedFilter(val);
