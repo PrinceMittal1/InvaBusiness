@@ -265,7 +265,6 @@ const AddingProduct: React.FC<props> = ({
         />
       </View>
 
-      {/* Price */}
       <View style={styles.inputWrapperMarginSmall}>
         <Text style={styles.inputLabel}>Price</Text>
         <View style={styles.dropdown}>

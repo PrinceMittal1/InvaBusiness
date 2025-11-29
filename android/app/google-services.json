@@ -39,6 +39,14 @@
           }
         },
         {
+          "client_id": "505647175641-pnc8t90ksfmlj5nr1rbumr2nrd8fl82h.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.invaID",
+            "certificate_hash": "1c2d08114f5e99711811ce0586995701196aabb8"
+          }
+        },
+        {
           "client_id": "505647175641-pt780qgtf1folf9e73nk9r17mrf5l1ib.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -74,6 +82,14 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "505647175641-6h385djvj5nn23rhu4691ano2jgbbvl5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.invabusiness",
+            "certificate_hash": "31a15fe9e43ebf3404b3b9e695842cae47939ae3"
+          }
+        },
         {
           "client_id": "505647175641-9qhg3mi7gvhu0u5m6hjt6vnpsnigg4ku.apps.googleusercontent.com",
           "client_type": 1,

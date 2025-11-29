@@ -13,7 +13,6 @@ export const creatingUserApi = async (payload: any) => {
         },
       }
     );
-          console.log("res is verfification is confirm -- response",response)
     return response;
   } catch (e: any) {
     console.log("res is verfification is confirm -- e",e)

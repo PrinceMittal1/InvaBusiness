@@ -4,6 +4,7 @@ import {
     Image,
     Platform,
     Pressable,
+    Share,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -35,7 +36,6 @@ const ProductBlock = ({
     onDeleting,
     onEditing,
     onCommentPress,
-    onSharePress,
 }: any) => {
     const styles = useStyles();
     const [blockItem, setBlockItem] = useState(item);
@@ -63,8 +63,30 @@ const ProductBlock = ({
             .replace(/\//g, "-");
     };
 
-    let updatingDataForProduct = (data) =>{
-        setBlockItem({...data})
+    let updatingDataForProduct = (data) => {
+        setBlockItem({ ...data })
+    }
+
+    const onSharePress = async () => {
+        try {
+            const result = await Share.share({
+                message:
+                    `Hey! 👋 Check out this product on Inva App — ❤️\nDownload now: https://invaid.onelink.me/RukT/us6cjqc2?product_id=${blockItem?._id}`,
+                title: 'Invite to Inva 💫',
+            });
+
+            if (result.action === Share.sharedAction) {
+                if (result.activityType) {
+                    console.log('Shared via:', result.activityType);
+                } else {
+                    console.log('Shared successfully');
+                }
+            } else if (result.action === Share.dismissedAction) {
+                console.log('Share dismissed');
+            }
+        } catch (error) {
+            console.log('Error sharing:', error);
+        }
     }
 
 
@@ -174,7 +196,7 @@ const ProductBlock = ({
             }
             {
                 showEdit &&
-                <EditingProductModal data={blockItem} onClosePress={()=>{setShowEdit(false)}} callApiAgain={updatingDataForProduct}/>
+                <EditingProductModal data={blockItem} onClosePress={() => { setShowEdit(false) }} callApiAgain={updatingDataForProduct} />
             }
         </View>
     );
