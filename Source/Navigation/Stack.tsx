@@ -14,6 +14,7 @@ import VerificationScreen from "../Screens/Verification";
 import Terms from "../Screens/Terms";
 import PrivacyPolicy from "../Screens/PrivacyPolicy";
 import EditProfile from "../Screens/EditProfile";
+import ProductDetail from "../Screens/ProductDetailsScreen";
 
 const MainStack = () => {
     const Stack = createNativeStackNavigator();
@@ -28,6 +29,7 @@ const MainStack = () => {
                 <Stack.Screen name={keys.Chat} component={Chat} />
                 <Stack.Screen name={keys.VerificationScreen} component={VerificationScreen} />
                 <Stack.Screen name={keys?.PrivacyPolicy} component={PrivacyPolicy} />
+                <Stack.Screen name={keys?.productDetail} component={ProductDetail} />
                 <Stack.Screen name={keys?.Terms} component={Terms} />
                 <Stack.Screen name={keys?.EditProfile} component={EditProfile} />
             </Stack.Navigator>

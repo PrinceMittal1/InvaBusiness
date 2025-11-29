@@ -5,6 +5,7 @@ const AppRoutes = {
     VerificationScreen : "VerificationScreen",
     Home : "Home",
     Chat : "Chat",
+        productDetail : "productDetail",
     BottomBar : "BottomBar",
     Terms : "Terms",
     PrivacyPolicy : "PrivacyPolicy",

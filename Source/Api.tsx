@@ -128,6 +128,16 @@ export const editProductApi = async (productId: string, payload: any) => {
 };
 
 
+
+export const gettingProductDetail = async (payload: { product_id: string }) => {
+  const response = await axios.get(`${apiUrl}/product/seller/product/details`, {
+    params: payload,
+    headers: { 'Content-Type': 'application/json' }
+  });
+  return response.data;
+};
+
+
 export const gettingPrivacyPolicy = async () => {
   try {
     const response = await axios.get(

@@ -92,7 +92,9 @@ const ProductBlock = ({
 
 
     return (
-        <View style={styles.mainView}>
+        <Pressable style={[styles.mainView ]} onPress={()=>{
+            navigation.navigate(AppRoutes?.productDetail, {productId : blockItem?._id})
+        }} >
             <View style={styles.sellerRow}>
                 <Pressable onPress={() => {
                     setShowEdit(true)
@@ -198,7 +200,7 @@ const ProductBlock = ({
                 showEdit &&
                 <EditingProductModal data={blockItem} onClosePress={() => { setShowEdit(false) }} callApiAgain={updatingDataForProduct} />
             }
-        </View>
+        </Pressable>
     );
 };
 
