@@ -17,6 +17,7 @@ import Toast from "react-native-toast-message";
 import notifee, { AndroidImportance, EventType as NotifeeEventType } from '@notifee/react-native';
 import { navigationRef, navigate } from "./NavigationRef"
 import AppRoutes from './Source/Routes/AppRoutes';
+import { updatingFCM } from './Source/Api';
 
 // Request Android 13+ notification permission
 async function requestNotificationPermission(): Promise<boolean> {
@@ -62,7 +63,7 @@ function handleNotificationNavigationFromData(data: { [k: string]: any }) {
   // typical business routes mapping (adjust names to your navigator)
   if (screen === 'product_detail') {
     if (productId && productId !== 'none' && productId !== 'null') {
-      navigate(AppRoutes?.productDetail, { productId : productId });
+      navigate(AppRoutes?.productDetail, { productId: productId });
       return;
     }
   } else if (screen === 'chat') {
@@ -113,11 +114,17 @@ function App(): React.JSX.Element {
           importance: AndroidImportance.HIGH,
         });
 
-        // get FCM token and optionally send to backend
         try {
           const token = await messaging().getToken();
-          console.log('FCM token (business):', token);
-          // send token to backend if needed
+          const state : any = store.getState();
+          if (token && state?.userData?.userData?._id && state?.userData?.userData?._id?.length > 0) {
+            let notification_token = token;
+            let seller_id = state?.userData?.userData?._id;
+            const res = await updatingFCM({
+              seller_id, 
+              notification_token
+            });
+          }
         } catch (err) {
           console.warn('Failed to get FCM token', err);
         }

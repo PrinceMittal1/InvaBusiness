@@ -152,6 +152,22 @@ export const gettingPrivacyPolicy = async () => {
   }
 };
 
+export const updatingFCM = async (payload: any) => {
+  try {
+    const response = await axios.post(
+      `${apiUrl}seller/updating/fcm`,
+      payload, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    return response;
+  } catch (error: any) {
+    console.log("response is ----- profile  ", error)
+  }
+};
+
+
 export const gettingTerms = async () => {
   try {
     const response = await axios.get(
