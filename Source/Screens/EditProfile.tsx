@@ -45,7 +45,7 @@ const EditProfile = () => {
         code: "PB",
         value: "Punjab"
     });
-     const [selectedBusinessType, setSelectedBusinessType] = useState('');
+    const [selectedBusinessType, setSelectedBusinessType] = useState('');
     const [nameForBusiness, setNameForBusiness] = useState('')
     const [loader, setLoader] = useState(false)
     const [selectedTags, setSelectedTags] = useState([]);
@@ -53,7 +53,6 @@ const EditProfile = () => {
     const insets = useSafeAreaInsets();
     const dispatch = useDispatch();
     const focus = useIsFocused();
-
 
     async function reverseGeocode(lat: number, lng: number) {
         const apiKey = "YOUR_API_KEY";
@@ -115,7 +114,7 @@ const EditProfile = () => {
                 setCities(citiesList.map(c => c.name));
             }
         } catch (error) {
-        }finally{
+        } finally {
             setLoader(false)
         }
     }
@@ -143,31 +142,31 @@ const EditProfile = () => {
     };
 
     const ClickedOnContinue = async () => {
-        try{
+        try {
             setLoader(true)
-const fireUtils = useFireStoreUtil();
-        var profile_picture: any = profileImage;
-        if (profileImage?.path) {
-            profile_picture = await fireUtils.uploadMediaToFirebase(profileImage?.path);
-        }
-        const ref = await updatingUserApi({
-            _id: user_id,
-            businessName : nameForBusiness,
-            businessType : selectedBusinessType,
-            stateCode: selectedStateCode?.code,
-            products : selectedTags,
-            state: selectedStateCode?.value,
-            city: selectedCity,
-            profile_picture: profile_picture,
-        })
+            const fireUtils = useFireStoreUtil();
+            var profile_picture: any = profileImage;
+            if (profileImage?.path) {
+                profile_picture = await fireUtils.uploadMediaToFirebase(profileImage?.path);
+            }
+            const ref = await updatingUserApi({
+                _id: user_id,
+                businessName: nameForBusiness,
+                businessType: selectedBusinessType,
+                stateCode: selectedStateCode?.code,
+                products: selectedTags,
+                state: selectedStateCode?.value,
+                city: selectedCity,
+                profile_picture: profile_picture,
+            })
 
-        if (ref) {
-            navigation.goBack();
-        }
-        }catch(e){
+            if (ref) {
+                navigation.goBack();
+            }
+        } catch (e) {
 
-        }finally{
-             setLoader(false)
+        } finally {
+            setLoader(false)
         }
     };
 
@@ -182,14 +181,6 @@ const fireUtils = useFireStoreUtil();
         setSelectedCity("");
     };
 
-    const loggingOut = () => {
-        dispatch(setUserData({}));
-        dispatch(setUserId(""));
-        navigation.reset({
-            index: 0,
-            routes: [{ name: AppRoutes?.Login }]
-        });
-    };
 
     const removeItem = (itemToRemove: string) => {
         setSelectedTags(prevItems => prevItems.filter(item => item !== itemToRemove));
@@ -223,92 +214,118 @@ const fireUtils = useFireStoreUtil();
                     <ActivityIndicator size="large" color="#fff" />
                 </View>
             )}
-            <View style={[styles.safeArea, {paddingTop : insets.top}]}>
+            <View style={[styles.safeArea, { paddingTop: insets.top }]}>
                 <Header title={"Edit Profile"} />
 
-                <ScrollView style={{flex:1}} showsVerticalScrollIndicator={false}>
-                <View style={styles.profileImageWrapper}>
-                    <FastImage
-                        style={styles.profileImage}
-                        source={
-                            profileImage && !profileImage?.path
-                                ? { uri: profileImage }
-                                : !profileImage && !profileImage?.path
-                                    ? Images?.person
-                                    : { uri: profileImage.path }
-                        }
-                    />
-                    <Pressable onPress={openGallery}>
+                <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+                    <View style={styles.profileImageWrapper}>
                         <FastImage
-                            source={Images?.EditForProductBlock}
-                            style={styles.editIcon}
-                            resizeMode="contain"
-                        />
-                    </Pressable>
-                </View>
-
-                <View style={{ width: width * 0.9, alignSelf: 'center', marginTop: hp(3) }}>
-                    <Text style={styles.inputLabel}>Your Business Name</Text>
-                    <View style={styles?.dropdown}>
-                        <TextInput
-                            value={nameForBusiness}
-                            placeholder="Name"
-                            placeholderTextColor={Colors?.DarkText}
-                            onChangeText={setNameForBusiness}
-                            style={{ fontSize: 16, height:wp(11) }}
-                        />
-                    </View>
-                </View>
-
-                <View style={{ width: width * 0.9, alignSelf: 'center', marginTop: hp(1) }}>
-                    <Text style={styles.inputLabel}>Business Type</Text>
-                    <Dropdown
-                        options={['Garment Store', 'Toys Store', 'Antique Store', 'Saree Store', 'Ladies Suit Store', 'Crockery Store', 'Handloom Store']}
-                        selectedValue={selectedBusinessType}
-                        onValueChange={setSelectedBusinessType}
-                    />
-                </View>
-
-                <View style={[styles.dropdownWrapper, { marginTop: hp(1) }]}>
-                    <Text style={styles.inputLabel}>Select Your state</Text>
-                    <Dropdown
-                        options={states}
-                        selectedValue={selectedStateCode?.code ? `${selectedStateCode?.value}` : ""}
-                        onValueChange={handleStateChange}
-                    />
-                </View>
-
-                <View style={[styles.dropdownWrapper, { marginTop: hp(1) }]}>
-                    <Text style={styles.inputLabel}>Select Your City</Text>
-                    <Dropdown
-                        label="Select City"
-                        options={cities}
-                        selectedValue={selectedCity}
-                        onValueChange={setSelectedCity}
-                    />
-                </View>
-
-                <View style={[styles.dropdownWrapper, { marginTop: hp(1) }]}>
-                    <Text style={styles.inputLabel}>Products</Text>
-                    <View style={styles.tagsContainer}>
-                        {selectedTags?.map((item, index) => (
-                            <RenderItemForSelectedProduct key={index} item={item} />
-                        ))}
-                    </View>
-                    <Dropdown
-                        options={["Saree", "Suits", "Toy gun", "Crockery", "Pants", "Shirts"]}
-                        selectedValue={""}
-                        onValueChange={item => {
-                            if (!selectedTags.includes(item)) {
-                                setSelectedTags([...selectedTags, item]);
+                            style={styles.profileImage}
+                            source={
+                                profileImage && !profileImage?.path
+                                    ? { uri: profileImage }
+                                    : !profileImage && !profileImage?.path
+                                        ? Images?.person
+                                        : { uri: profileImage.path }
                             }
-                        }}
-                    />
-                </View>
+                        />
+                        <Pressable onPress={openGallery}>
+                            <FastImage
+                                source={Images?.EditForProductBlock}
+                                style={styles.editIcon}
+                                resizeMode="contain"
+                            />
+                        </Pressable>
+                    </View>
 
-                <View style={styles.flexSpacer} />
+                    <View style={{ width: width * 0.9, alignSelf: 'center', marginTop: hp(3) }}>
+                        <Text style={styles.inputLabel}>Your Business Name</Text>
+                        <View style={styles?.dropdown}>
+                            <TextInput
+                                value={nameForBusiness}
+                                placeholder="Name"
+                                placeholderTextColor={Colors?.DarkText}
+                                onChangeText={setNameForBusiness}
+                                style={{ fontSize: 16, height: wp(11) }}
+                            />
+                        </View>
+                    </View>
 
-                <BottomButton btnStyle={styles.bottomButton} txtStyle={{color:'#FFFFFF'}} title={"Continue"} clickable={ClickedOnContinue} />
+                    <View style={{ width: width * 0.9, alignSelf: 'center', marginTop: hp(1) }}>
+                        <Text style={styles.inputLabel}>Business Type</Text>
+                        <Dropdown
+                            options={['Garment Store', 'Toys Store', 'Antique Store', 'Saree Store', 'Ladies Suit Store', 'Crockery Store', 'Handloom Store']}
+                            selectedValue={selectedBusinessType}
+                            removeItem={(item: any) => {
+                                if (item == selectedBusinessType) {
+                                    setSelectedBusinessType('')
+                                }
+                            }}
+                            alreadySelectedOptions={[selectedBusinessType]}
+                            onValueChange={setSelectedBusinessType}
+                        />
+                    </View>
+
+                    <View style={[styles.dropdownWrapper, { marginTop: hp(1) }]}>
+                        <Text style={styles.inputLabel}>Select Your state</Text>
+                        <Dropdown
+                            options={states}
+                            alreadySelectedOptions={[`${selectedStateCode?.value} (${selectedStateCode?.code})`]}
+                            selectedValue={selectedStateCode?.code ? `${selectedStateCode?.value}` : ""}
+                            onValueChange={handleStateChange}
+                            removeItem={(item: any) => {
+                                const match: any = item.match(/^(.*)\s\((.*)\)$/);
+                                if (match[1] == selectedStateCode?.value) {
+                                    setSelectedStateCode({
+                                        code: "",
+                                        value: ""
+                                    })
+                                }
+                            }}
+                        />
+                    </View>
+
+                    <View style={[styles.dropdownWrapper, { marginTop: hp(1) }]}>
+                        <Text style={styles.inputLabel}>Select Your City</Text>
+                        <Dropdown
+                            label="Select City"
+                            options={cities}
+                            alreadySelectedOptions={[selectedCity]}
+                            selectedValue={selectedCity}
+                            removeItem={(item: any) => {
+                                if (selectedCity == item) {
+                                    setSelectedCity('')
+                                }
+                            }}
+                            onValueChange={setSelectedCity}
+                        />
+                    </View>
+
+                    <View style={[styles.dropdownWrapper, { marginTop: hp(1) }]}>
+                        <Text style={styles.inputLabel}>Products</Text>
+                        <View style={styles.tagsContainer}>
+                            {selectedTags?.map((item, index) => (
+                                <RenderItemForSelectedProduct key={index} item={item} />
+                            ))}
+                        </View>
+                        <Dropdown
+                            options={["Saree", "Suits", "Toy gun", "Crockery", "Pants", "Shirts"]}
+                            selectedValue={""}
+                            alreadySelectedOptions={selectedTags}
+                            removeItem={(item: any) => {
+                                removeItem(item)
+                            }}
+                            onValueChange={item => {
+                                if (!selectedTags.includes(item)) {
+                                    setSelectedTags([...selectedTags, item]);
+                                }
+                            }}
+                        />
+                    </View>
+
+                    <View style={styles.flexSpacer} />
+
+                    <BottomButton btnStyle={styles.bottomButton} txtStyle={{ color: '#FFFFFF' }} title={"Continue"} clickable={ClickedOnContinue} />
 
                 </ScrollView>
             </View>
@@ -324,8 +341,8 @@ const styles = StyleSheet.create({
         backgroundColor: "rgba(233, 174, 160, 0.1)"
     },
     dropdown: {
-        paddingHorizontal:12,
-        height:wp(11),
+        paddingHorizontal: 12,
+        height: wp(11),
         borderWidth: 1,
         borderColor: Colors?.buttonPrimaryColor,
         borderRadius: 8,
@@ -361,7 +378,7 @@ const styles = StyleSheet.create({
     },
     tagItem: {
         padding: 10,
-        marginRight:5,
+        marginRight: 5,
         marginBottom: 3,
         flexDirection: 'row',
         alignItems: 'center',
@@ -381,7 +398,7 @@ const styles = StyleSheet.create({
     bottomButton: {
         marginTop: hp(5),
         marginBottom: hp(5),
-        backgroundColor:Colors?.buttonPrimaryColor,
+        backgroundColor: Colors?.buttonPrimaryColor,
     },
     inputLabel: {
         fontFamily: AppFonts.Regular,

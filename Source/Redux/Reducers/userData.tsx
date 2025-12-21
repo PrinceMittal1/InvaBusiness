@@ -4,6 +4,8 @@ export const userDataSlice = createSlice({
   initialState: {
     auth: false,
     user_id : "",
+    productType : [],
+    businessType : [],
     userData : {}
   },
   reducers: {
@@ -16,6 +18,12 @@ export const userDataSlice = createSlice({
     setUserData: (state, action) => {
       state.userData = action.payload;
     },
+    setProductType: (state, action) => {
+      state.productType = action.payload;
+    },
+    setBusinessType: (state, action) => {
+      state.businessType = action.payload;
+    },
   },
 });
 
@@ -23,7 +31,9 @@ export const userDataSlice = createSlice({
 export const {  
   setAuth,
   setUserId,
-  setUserData
+  setUserData,
+  setProductType,
+  setBusinessType
 } = userDataSlice.actions;
 
 export default userDataSlice.reducer;

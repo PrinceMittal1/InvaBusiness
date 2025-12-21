@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { FlatList, Keyboard, KeyboardAvoidingView, Platform, Pressable, Text, TouchableWithoutFeedback, View } from "react-native"
+import { FlatList, Image, Keyboard, KeyboardAvoidingView, Platform, Pressable, Text, TouchableWithoutFeedback, View } from "react-native"
 import useFireStoreUtil from "../Functions/FireStoreUtils";
 import { useSelector } from "react-redux";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -8,6 +8,7 @@ import FastImage from "@d11/react-native-fast-image";
 import Header from "../Components/Header";
 import { useIsFocused, useNavigation } from "@react-navigation/native";
 import AppRoutes from "../Routes/AppRoutes";
+import Images from "../Keys/Images";
 
 const ChatListing = () => {
     const [allChat, setAllChats] = useState<any>([]);
@@ -77,6 +78,13 @@ const ChatListing = () => {
                             data={allChat}
                             style={{ width: wp(90), alignSelf: 'center' }}
                             renderItem={RenderItem}
+                            ListEmptyComponent={()=>{
+                                return(
+                                    <View style={{flex:1, justifyContent:'center', alignItems:'center'}}>
+                                        <FastImage source={Images?.emptyMessage} style={{width:wp(100), height:wp(100)}} resizeMode="contain"/>
+                                    </View>
+                                )
+                            }}
                         />
                     </>
                 </TouchableWithoutFeedback>

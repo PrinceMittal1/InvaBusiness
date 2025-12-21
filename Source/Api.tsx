@@ -122,7 +122,6 @@ export const editProductApi = async (productId: string, payload: any) => {
     );
     return response;
   } catch (error: any) {
-    console.log("response is ------- error", error);
     throw error;
   }
 };
@@ -130,7 +129,7 @@ export const editProductApi = async (productId: string, payload: any) => {
 
 
 export const gettingProductDetail = async (payload: { product_id: string }) => {
-  const response = await axios.get(`${apiUrl}/product/seller/product/details`, {
+  const response = await axios.get(`${apiUrl}product/seller/product/details`, {
     params: payload,
     headers: { 'Content-Type': 'application/json' }
   });
@@ -179,5 +178,48 @@ export const gettingTerms = async () => {
     return response;
   } catch (error: any) {
     console.log("response is ----- profile  ", error)
+  }
+};
+
+
+export const gettingProductType = async () => {
+  try {
+    const response = await axios.get(
+      `${apiUrl}productType/product/types`,
+      {
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
+    return response;
+  } catch (error: any) {
+  }
+};
+
+
+export const gettingBusinessType = async () => {
+  try {
+    const response = await axios.get(
+      `${apiUrl}productType/business/types`,
+      {
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
+    return response;
+  } catch (error: any) {
+    console.log("response is ----- profile  ", error)
+  }
+};
+
+export const gettingProductTags = async (payload: { product_type: string }) => {
+  try {
+    const response = await axios.get(
+      `${apiUrl}productType/product/tags`,
+      {
+        params: payload,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
+    return response;
+  } catch (error: any) {
   }
 };

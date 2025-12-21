@@ -15,9 +15,9 @@ import AppFonts from "../Functions/Fonts";
 import Colors from "../Keys/colors";
 import ImageCropPicker from "react-native-image-crop-picker";
 import { setLoader } from "../Redux/Reducers/tempData";
-import { updatingUserApi } from "../Api";
+import { gettingBusinessType, gettingProductType, updatingUserApi } from "../Api";
 import AppRoutes from "../Routes/AppRoutes";
-import { setUserData } from "../Redux/Reducers/userData";
+import { setProductType, setUserData } from "../Redux/Reducers/userData";
 import Geolocation from "@react-native-community/geolocation";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -26,7 +26,7 @@ const { width, height } = Dimensions.get('window')
 const ScreenForUserDetails = () => {
     const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0;
     const [selected, setSelected] = useState('18');
-    const { user_id } = useSelector((state: any) => state.userData);
+    const { user_id, productType: productTypes } = useSelector((state: any) => state.userData);
     const [selectedBusinessType, setSelectedBusinessType] = useState('');
     const [selectedProducts, setSelectedProducts] = useState([]);
     const [nameForBusiness, setNameForBusiness] = useState('')
@@ -35,6 +35,8 @@ const ScreenForUserDetails = () => {
         code: 'PB',
         value: 'Punjab'
     });
+    const [allBusinessType, setAllBusinessType] = useState([])
+    const [allProductType, setAllProductType] = useState([]);
     const [profileImage, setProfileImage] = useState<any>(null);
     const [latLong, setLatLong] = useState<any>(null)
     const [cities, setCities] = useState<string[]>([]);
@@ -75,6 +77,42 @@ const ScreenForUserDetails = () => {
         }));
     };
 
+    useEffect(() => {
+        if (productTypes && productTypes?.length > 0) {
+            setAllProductType(productTypes)
+        }
+    }, [productTypes])
+
+    const gettingDataProudctType = async () => {
+        try {
+            const res = await gettingProductType();
+            if (res?.status == 200) {
+                dispatch(setProductType(res?.data?.product_types))
+            } else {
+                dispatch(setProductType([]))
+            }
+        } catch (error) {
+            dispatch(setProductType([]))
+        }
+    }
+
+    const gettingDataBusinessType = async () => {
+        try {
+            const res = await gettingBusinessType();
+            if (res?.status == 200) {
+                setAllBusinessType(res?.data)
+            } else {
+            }
+        } catch (error) {
+        }
+    }
+
+
+    useEffect(() => {
+        gettingDataProudctType();
+        gettingDataBusinessType();
+    }, [])
+
     const ClickedOnContinue = async () => {
         setLoader(true)
         const fireUtils = useFireStoreUtil();
@@ -91,8 +129,8 @@ const ScreenForUserDetails = () => {
             state: selectedStateCode?.value,
             city: selectedCity,
             profile_picture: profile_picture,
-            latitude : String(latLong?.latitude) ?? '',
-            longtitude : String(latLong?.longtitude) ?? ''
+            latitude: String(latLong?.latitude) ?? '',
+            longtitude: String(latLong?.longtitude) ?? ''
         })
 
         if (ref?.status == 200) {
@@ -142,12 +180,12 @@ const ScreenForUserDetails = () => {
             const regex = /(.*)\s\((.*)\)/;
             const [, name, code] = match.match(regex) || [];
             setSelectedStateCode({
-                code : code,
-                value : name
+                code: code,
+                value: name
             })
             setLatLong({
-                latitude : lat,
-                longtitude : lng
+                latitude: lat,
+                longtitude: lng
             })
         } catch (err) {
             console.error("Geocoding error:", err);
@@ -200,7 +238,7 @@ const ScreenForUserDetails = () => {
     };
 
     return (
-        <View style={{ flex: 1, backgroundColor: 'white', paddingTop: insets?.top, paddingBottom:insets.bottom }}>
+        <View style={{ flex: 1, backgroundColor: 'white', paddingTop: insets?.top, paddingBottom: insets.bottom }}>
             <Header title={"Details"} />
 
             <ScrollView style={{ flex: 1 }}>
@@ -230,8 +268,14 @@ const ScreenForUserDetails = () => {
                 <View style={{ width: width * 0.9, alignSelf: 'center', marginTop: hp(1) }}>
                     <Text style={styles.inputLabel}>Business Type</Text>
                     <Dropdown
-                        options={['Garment Store', 'Toys Store', 'Antique Store', 'Saree Store', 'Ladies Suit Store', 'Crockery Store', 'Handloom Store']}
+                        options={allBusinessType}
                         selectedValue={selectedBusinessType}
+                        removeItem={(item: any) => {
+                            if (item == selectedBusinessType) {
+                                setSelectedBusinessType('')
+                            }
+                        }}
+                        alreadySelectedOptions={[selectedBusinessType]}
                         onValueChange={setSelectedBusinessType}
                     />
                 </View>
@@ -246,7 +290,7 @@ const ScreenForUserDetails = () => {
                         ))}
                     </View>
                     <Dropdown
-                        options={['Saree', 'Suits', 'Toys', 'Dinner Set', 'Crockery', 'Pants', 'Shirts']}
+                        options={allProductType}
                         selectedValue={''}
                         onValueChange={(item) => {
                             let oldItems: any = [...selectedProducts, item]
@@ -268,6 +312,16 @@ const ScreenForUserDetails = () => {
                     <Text style={styles.inputLabel}>Select Your state</Text>
                     <Dropdown
                         options={states}
+                        removeItem={(item: any) => {
+                            const match: any = item.match(/^(.*)\s\((.*)\)$/);
+                            if (match[1] == selectedStateCode?.value) {
+                                setSelectedStateCode({
+                                    code: "",
+                                    value: ""
+                                })
+                            }
+                        }}
+                        alreadySelectedOptions={[`${selectedStateCode?.value} (${selectedStateCode?.code})`]}
                         selectedValue={selectedStateCode?.code ? `${selectedStateCode?.value}` : ''}
                         onValueChange={handleStateChange}
                     />
@@ -280,19 +334,25 @@ const ScreenForUserDetails = () => {
                         label="Select City"
                         options={cities}
                         selectedValue={selectedCity}
+                        removeItem={(item: any) => {
+                            if (selectedCity == item) {
+                                setSelectedCity('')
+                            }
+                        }}
+                        alreadySelectedOptions={[selectedCity]}
                         onValueChange={setSelectedCity}
                     />
                 </View>
 
             </ScrollView>
 
-                   
 
-                <BottomButton
-                    btnStyle={{ marginBottom: wp(10), marginTop: hp(4), backgroundColor: Colors?.buttonPrimaryColor }}
-                    title={'Continue'}
-                    clickable={ClickedOnContinue}
-                />
+
+            <BottomButton
+                btnStyle={{ marginBottom: wp(10), marginTop: hp(4), backgroundColor: Colors?.buttonPrimaryColor }}
+                title={'Continue'}
+                clickable={ClickedOnContinue}
+            />
 
         </View>
     )
@@ -308,9 +368,9 @@ const styles = StyleSheet.create({
     },
     dropdown: {
         paddingHorizontal: 12,
-        height:wp(12),
+        height: wp(12),
         borderWidth: 1,
-        justifyContent:'center',
+        justifyContent: 'center',
         borderColor: Colors?.buttonPrimaryColor,
         borderRadius: 8,
     },

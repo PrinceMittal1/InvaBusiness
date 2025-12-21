@@ -16,25 +16,21 @@ import FastImage from '@d11/react-native-fast-image';
 import Images from '../Keys/Images';
 
 function searchItems(query, arr) {
-  if (!query) return arr; // if empty query return full array
+  if (!query) return arr;
 
-  // Make case-insensitive
   query = query.toLowerCase();
 
-  // Sort by relevance: exact start > includes > rest
   return arr
-    .filter(item => item.toLowerCase().includes(query)) // filter matches
+    .filter(item => item.toLowerCase().includes(query)) 
     .sort((a, b) => {
       let aLower = a.toLowerCase();
       let bLower = b.toLowerCase();
 
-      // 1. Items starting with query come first
       let aStarts = aLower.startsWith(query);
       let bStarts = bLower.startsWith(query);
       if (aStarts && !bStarts) return -1;
       if (!aStarts && bStarts) return 1;
 
-      // 2. Shorter match earlier
       return aLower.indexOf(query) - bLower.indexOf(query);
     });
 }
@@ -75,7 +71,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   }
 
   useEffect(()=>{
-    if(!searchVal){
+    if(!searchVal || searchVal?.length == 0){
       setTempOptions(options)
     }else{
       const result = searchItems(searchVal, tempoptions)
@@ -83,8 +79,11 @@ const Dropdown: React.FC<DropdownProps> = ({
     }
   },[searchVal])
 
-  console.log("rbjherbv", options)
 
+  useEffect(()=>{
+    setTempOptions(options)
+  },[options])
+    
   const selectedOrNot = (item) => {
     if (!alreadySelectedOptions || alreadySelectedOptions?.length == 0) return false
     if (alreadySelectedOptions?.includes(item)) return true
@@ -127,9 +126,9 @@ const Dropdown: React.FC<DropdownProps> = ({
             <FlatList
               data={tempoptions}
               keyExtractor={(item) => item}
-              renderItem={({ item }) => (
+              renderItem={({ item, index }) => (
                 <TouchableOpacity
-                  style={selectedOrNot(item) ? styles.optionSelected : styles?.option}
+                  style={[selectedOrNot(item) ? styles.optionSelected : styles?.option, index == 0 && {marginTop:6}, index == tempoptions?.length - 1 && {borderBottomWidth:0}]}
                   onPress={() => { selectedOrNot(item) ? removeItems(item) : handleSelect(item) }}
                 >
                   <Text>{item}</Text>
@@ -189,6 +188,7 @@ const styles = StyleSheet.create({
   optionSelected: {
     padding: 12,
     borderBottomWidth: 1,
+    borderRadius:10,
     backgroundColor: Colors?.buttonPrimaryColor,
     borderBottomColor: '#eee',
   },

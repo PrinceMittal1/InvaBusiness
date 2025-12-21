@@ -54,15 +54,15 @@ const ProductDetail = () => {
         try {
             setLoader(true)
             const res: any = await gettingProductDetail({ product_id: route?.params?.productId })
+console.log("route?.params?.productIdee ee eeeeee ", res?.product)
             setBlockItem(res?.product)
         } catch (e) {
-            console.log("route?.params?.productIdee ee eeeeee ", e)
         } finally {
             setLoader(false)
         }
     }
 
-    console.log("route?.params?.productId route?.params?.productId ", blockItem)
+
     useEffect(() => {
         getProductDetail();
     }, [])
@@ -86,12 +86,9 @@ const ProductDetail = () => {
 
             if (result.action === Share.sharedAction) {
                 if (result.activityType) {
-                    console.log('Shared via:', result.activityType);
                 } else {
-                    console.log('Shared successfully');
                 }
             } else if (result.action === Share.dismissedAction) {
-                console.log('Share dismissed');
             }
         } catch (error) {
             console.log('Error sharing:', error);

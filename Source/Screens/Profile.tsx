@@ -65,7 +65,6 @@ const Profile = () => {
     };
 
     const RenderItem = ({ item, onPress }:any) => {
-        console.log("data in render itme -- ", item, onPress)
         return (
             <Pressable
                 style={styles.menuItem}

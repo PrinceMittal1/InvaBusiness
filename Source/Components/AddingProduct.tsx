@@ -1,5 +1,5 @@
 import { useNavigation, useTheme } from "@react-navigation/native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -21,13 +21,14 @@ import ImageCropPicker from "react-native-image-crop-picker";
 import ShowMediaModal from "./ShowMediaModal";
 import Dropdown from "./DropDown";
 import ProductUploadingModal from "../Modal/productUploadingModal";
-import { creatingProduct } from "../Api";
+import { creatingProduct, gettingProductTags, gettingProductType } from "../Api";
 import AppFonts from "../Functions/Fonts";
 import Colors from "../Keys/colors";
 import { showToast } from "../Functions/showToast";
 import BottomButton from "./BottomButton";
 import { setLoader } from "../Redux/Reducers/tempData";
 import Images from "../Keys/Images";
+import { setProductType } from "../Redux/Reducers/userData";
 
 interface props {
   cameraOnpress?: () => void;
@@ -42,15 +43,15 @@ const AddingProduct: React.FC<props> = ({
   ClosingModal,
   productsaved,
 }) => {
-  const { user_id, userData } = useSelector((state: any) => state.userData);
+  const { user_id, userData, productType: productTypes } = useSelector((state: any) => state.userData);
   const { colors } = useTheme() as any;
-
+  const [allProductType, setAllProductType] = useState([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [showViewer, setShowViewer] = useState<boolean>(false);
   const [mediaData, setMediaData] = useState<any>(null);
-  const navigation: any = useNavigation();
+  const [allTags, setAllTags] = useState([])
   const [images1, setImages] = useState<any>([]);
   const [stateForUploadingModal, setStateForUploadingModal] = useState({
     percentage: '0',
@@ -60,13 +61,51 @@ const AddingProduct: React.FC<props> = ({
   });
   const [selectedTags, setSelectedTags] = useState([]);
   const dispatch = useDispatch();
-  const [productType, setProductType] = useState('');
+  const [productTypeTemp, setProductTypeTemp] = useState('');
   const styles = createStyles(colors);
 
   const removeImage = (index: any) => {
     const updatedImages = images1?.filter((_: any, i: any) => i !== index);
     setImages(updatedImages);
   };
+
+  const gettingDataProudctType = async () => {
+    try {
+      const res = await gettingProductType();
+      if (res?.status == 200) {
+        dispatch(setProductType(res?.data?.product_types))
+      } else {
+        dispatch(setProductType([]))
+      }
+    } catch (error) {
+      dispatch(setProductType([]))
+    }
+  }
+
+  const gettingDataProudctTags = async (type: string) => {
+    try {
+      const res = await gettingProductTags({
+        product_type: type
+      });
+      if (res?.status == 200) {
+        setAllTags(res?.data?.tags)
+      } else {
+      }
+    } catch (error) {
+    }
+  }
+
+
+  useEffect(() => {
+    gettingDataProudctType();
+  }, [])
+
+  useEffect(() => {
+    if (productTypes && productTypes?.length > 0) {
+      setAllProductType(productTypes)
+    }
+  }, [productTypes])
+
 
   const uploadMediaToFirebase = async (data: any, currentNumber: any, totalNumber: any) => {
     try {
@@ -105,7 +144,7 @@ const AddingProduct: React.FC<props> = ({
     } else if (!description?.trim()) {
       showToast("Description is required");
       return false;
-    } else if (!productType?.trim()) {
+    } else if (!productTypeTemp?.trim()) {
       showToast("Product type is required");
       return false;
     } else if (images1?.length < 1) {
@@ -115,6 +154,7 @@ const AddingProduct: React.FC<props> = ({
     setStateForUploadingModal({ ...stateForUploadingModal, state: true });
     return true;
   };
+
 
   const sendingTobackend = async () => {
     try {
@@ -139,7 +179,7 @@ const AddingProduct: React.FC<props> = ({
           sellerCity,
           sellerState,
           tags,
-          productType,
+          productType : productTypeTemp,
           price: Number(price.replace(/[^0-9.]/g, "")),
           images: urlOfImages
         });
@@ -259,9 +299,19 @@ const AddingProduct: React.FC<props> = ({
       <View style={styles.inputWrapperMargin}>
         <Text style={styles.inputLabel}>Products Type</Text>
         <Dropdown
-          options={['Saree', 'Suits', 'Toys', 'Dinner Set', 'Crockery', 'Pants', 'Shirts']}
-          selectedValue={productType}
-          onValueChange={setProductType}
+          options={allProductType}
+          selectedValue={productTypeTemp}
+          alreadySelectedOptions={[productTypeTemp]}
+          removeItem={(item) => {
+            if (item == productTypeTemp) {
+              setProductTypeTemp('')
+            }
+          }}
+          onValueChange={(item: any) => {
+            setSelectedTags([])
+            setProductTypeTemp(item)
+            gettingDataProudctTags(item);
+          }}
         />
       </View>
 
@@ -290,9 +340,14 @@ const AddingProduct: React.FC<props> = ({
           ))}
         </View>
         <Dropdown
-          options={['Saree for women', 'Suits for ladies', 'Toy gun', 'Dinner Set red', 'Crockery glasses', 'Pants for men', 'Shirts black']}
+          options={allTags}
           selectedValue={''}
           alreadySelectedOptions={selectedTags}
+          removeItem={(ite: any) => {
+            if (selectedTags?.includes(ite)) {
+              setSelectedTags(prevItems => prevItems.filter(item => item !== ite));
+            }
+          }}
           onValueChange={(item) => setSelectedTags([...selectedTags, item])}
         />
       </View>

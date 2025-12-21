@@ -1,5 +1,5 @@
 import FastImage from '@d11/react-native-fast-image';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, View, Text, ActivityIndicator, StyleSheet, Dimensions, TouchableWithoutFeedback, Pressable, TextInput, FlatList, TouchableOpacity, Platform, Image } from 'react-native';
 import Images from '../Keys/Images';
 import { hp, wp } from '../Keys/dimension';
@@ -13,7 +13,8 @@ import RNFS from 'react-native-fs';
 import storage from '@react-native-firebase/storage';
 import AppFonts from '../Functions/Fonts';
 import Colors from '../Keys/colors';
-import { editProductApi } from '../Api';
+import { editProductApi, gettingProductTags, gettingProductType } from '../Api';
+import { setProductType } from '../Redux/Reducers/userData';
 
 
 const { width: screen_Width, height: screen_Height } = Dimensions.get('window')
@@ -26,16 +27,61 @@ const EditingProductModal = ({ data, onClosePress, callApiAgain }: any) => {
     const [mediaData, setMediaData] = useState<any>(null);
     const [images1, setImages] = useState<any>(data?.images);
     const [price, setPrice] = useState(String(data?.price) ?? '');
+    const [allProductType, setAllProductType] = useState([]);
     const [selectedTags, setSelectedTags] = useState(data?.tags ?? [])
+    const [allTags, setAllTags] = useState([])
     const dispatch = useDispatch();
-    const { user_id } = useSelector((state: any) => state.userData);
-    const [productType, setProductType] = useState(data?.productType)
+    const [loader, setLoader] = useState(false)
+    const { user_id, userData, productType: productTypes } = useSelector((state: any) => state.userData);
+    const [productTypeTemp, setProductTypeTemp] = useState(data?.productType)
     const [stateForUploadingModal, setStateForUploadingModal] = useState({
         percentage: '0',
         number: 1,
         total: 1,
         state: false
     })
+
+    const gettingDataProudctType = async () => {
+        try {
+            const res = await gettingProductType();
+            if (res?.status == 200) {
+                dispatch(setProductType(res?.data?.product_types))
+            } else {
+                dispatch(setProductType([]))
+            }
+        } catch (error) {
+            dispatch(setProductType([]))
+        }
+    }
+
+    useEffect(()=>{
+        setProductTypeTemp(data?.productType)
+        gettingDataProudctTags(data?.productType)
+    },[])
+
+    const gettingDataProudctTags = async (type: string) => {
+        try {
+            const res = await gettingProductTags({
+                product_type: type
+            });
+            if (res?.status == 200) {
+                setAllTags(res?.data?.tags)
+            } else {
+            }
+        } catch (error) {
+        }
+    }
+
+
+    useEffect(() => {
+        gettingDataProudctType();
+    }, [])
+
+    useEffect(() => {
+        if (productTypes && productTypes?.length > 0) {
+            setAllProductType(productTypes)
+        }
+    }, [productTypes])
 
     const removeItem = (itemToRemove: string) => {
         setSelectedTags(prevItems => prevItems.filter(item => item !== itemToRemove));
@@ -162,7 +208,7 @@ const EditingProductModal = ({ data, onClosePress, callApiAgain }: any) => {
     };
 
     const sendingTobackend = async () => {
-        if(oldData?.price == price && oldData?.title == title && oldData?.description == description && oldData?.productType == productType && oldData?.tags == selectedTags && oldData?.images == images1){
+        if (oldData?.price == price && oldData?.title == title && oldData?.description == description && oldData?.productType == productTypeTemp && oldData?.tags == selectedTags && oldData?.images == images1) {
             onClosePress();
             return true
         }
@@ -179,32 +225,34 @@ const EditingProductModal = ({ data, onClosePress, callApiAgain }: any) => {
                     urlOfImages.push(image);
                 }
             }
-            let payload : any = {}
-            if(oldData?.images != images1){
+            let payload: any = {}
+            if (oldData?.images != images1) {
                 payload.images = urlOfImages;
             }
-            if(oldData.title != title){
+            if (oldData.title != title) {
                 payload.title = title;
             }
-            if(oldData?.tags != selectedTags){
+            if (oldData?.tags != selectedTags) {
                 payload.tags = selectedTags;
             }
-            if(oldData.productType != productType){
-                payload.productType = productType;
+            if (oldData.productType != productTypeTemp) {
+                payload.productType = productTypeTemp;
             }
-            if(oldData.price != price){
+            if (oldData.price != price) {
                 payload.price = Number(price.replace(/[^0-9.]/g, ""));
             }
             const res = await editProductApi(data?._id, payload);
-            if(res.status == 200){
+            if (res.status == 200) {
                 callApiAgain(res?.data?.product);
             }
         } catch (error) {
             console.error("⚠️ Catch Error:", error);
         } finally {
+            setLoader(false)
             onClosePress();
         }
     };
+
 
     return (
         <Modal
@@ -212,6 +260,21 @@ const EditingProductModal = ({ data, onClosePress, callApiAgain }: any) => {
             animationType="fade"
             visible={true}
         >
+            {loader && (
+                <View style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.3)',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    zIndex: 999
+                }}>
+                    <ActivityIndicator size="large" color="#fff" />
+                </View>
+            )}
             <View style={styles.modalBackground}>
                 <View style={styles.modalContainer}>
                     <Pressable
@@ -264,10 +327,18 @@ const EditingProductModal = ({ data, onClosePress, callApiAgain }: any) => {
                         <Text style={styles.inputLabel}>Products Type</Text>
 
                         <Dropdown
-                            options={['Saree', 'Suits', 'Toys', 'Dinner Set', 'Crockery', 'Pants', 'Shirts']}
-                            selectedValue={productType}
-                            onValueChange={(item) => {
-                                setProductType(item)
+                            options={allProductType}
+                            selectedValue={productTypeTemp}
+                            alreadySelectedOptions={[productTypeTemp]}
+                            removeItem={(item) => {
+                                if (item == productTypeTemp) {
+                                    setProductTypeTemp('')
+                                }
+                            }}
+                            onValueChange={(item: any) => {
+                                setSelectedTags([])
+                                setProductTypeTemp(item)
+                                gettingDataProudctTags(item);
                             }}
                         />
                     </View>
@@ -295,15 +366,15 @@ const EditingProductModal = ({ data, onClosePress, callApiAgain }: any) => {
                             ))}
                         </View>
                         <Dropdown
-                            options={['Saree for women', 'Suits for ladies', 'Toy gun', 'Dinner Set red', 'Crockery glasses', 'Pants for men', 'Shirts black']}
+                            options={allTags}
                             selectedValue={''}
                             alreadySelectedOptions={selectedTags}
                             onValueChange={(item) => {
                                 let oldItems: any = [...selectedTags, item]
                                 setSelectedTags(oldItems)
                             }}
-                            removeItem={(item : any)=>{
-                                const newArr = selectedTags.filter((items:any) => items !== item);
+                            removeItem={(item: any) => {
+                                const newArr = selectedTags.filter((items: any) => items !== item);
                                 setSelectedTags(newArr)
                             }}
                         />
@@ -356,11 +427,11 @@ const EditingProductModal = ({ data, onClosePress, callApiAgain }: any) => {
                     <BottomButton
                         title={'Save'}
                         clickable={() => {
-                            dispatch(setLoader(true))
+                            setLoader(true)
                             sendingTobackend();
                         }}
                         txtStyle={{ fontSize: 20 }}
-                        btnStyle={{ marginTop: 20, width: screen_Width * 0.85, backgroundColor:Colors?.buttonPrimaryColor }}
+                        btnStyle={{ marginTop: 20, width: screen_Width * 0.85, backgroundColor: Colors?.buttonPrimaryColor }}
                     />
                 </View>
             </View>
@@ -379,33 +450,33 @@ const styles = StyleSheet.create({
     },
     dropdown: {
         paddingHorizontal: 12,
-        height:wp(12),
+        height: wp(12),
         borderWidth: 1,
-        justifyContent:'center',
+        justifyContent: 'center',
         borderColor: Colors?.buttonPrimaryColor,
         borderRadius: 8,
     },
     tagItem: {
-      padding: 10,
-      paddingRight: 5,
-      margin: 5,
-      marginBottom: 0,
-      marginTop: 4,
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: '#e0dedd',
-      borderRadius: 10
+        padding: 10,
+        paddingRight: 5,
+        margin: 5,
+        marginBottom: 0,
+        marginTop: 4,
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#e0dedd',
+        borderRadius: 10
     },
     tagText: {
-      fontSize: 14,
-      fontFamily: AppFonts.Regular
+        fontSize: 14,
+        fontFamily: AppFonts.Regular
     },
     tagRemoveButton: {
-      paddingHorizontal: 5
+        paddingHorizontal: 5
     },
     tagRemoveIcon: {
-      width: 14,
-      height: 14
+        width: 14,
+        height: 14
     },
     modalContainer: {
         backgroundColor: 'white',
@@ -452,8 +523,8 @@ const styles = StyleSheet.create({
     },
     inputPrice: {
         fontSize: 16,
-        height:wp(12),
-        alignItems:'center'
+        height: wp(12),
+        alignItems: 'center'
     },
     inputLabel: {
         fontFamily: AppFonts.Regular,

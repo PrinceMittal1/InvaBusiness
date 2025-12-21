@@ -28,7 +28,7 @@ const PrivacyPolicy = () => {
 
 
     return (
-        <SafeAreaView style={[styles.safeArea, { marginTop: statusBarHeight }]}>
+        <SafeAreaView style={[styles.safeArea ]}>
             <Header title={'Privacy Policy'} />
 
             <View style={{ width: wp(95), marginTop: wp(4), alignSelf: 'center', borderWidth: 1, borderColor: Colors?.buttonPrimaryColor, borderRadius: wp(2), padding: wp(3) }}>

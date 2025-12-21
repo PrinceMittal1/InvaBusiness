@@ -10,6 +10,7 @@ const Images = {
     "delete" :  require("../Assets/delete.png"),
     "Notification" : require("../Assets/bell.png"),
     "Cancel" : require('../Assets/close.png'),
+    "emptyMessage" : require("../Assets/emptyMessage.png"),
     "Heart" : require("../Assets/heart.png"),
     "filledHeart" : require("../Assets/filledHeart.png"),
     "comment" : require("../Assets/comment.png"),

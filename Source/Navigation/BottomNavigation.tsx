@@ -1,5 +1,5 @@
 // BottomTabs.tsx or inside same file
-import React from 'react';
+import React, { useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Home from '../Screens/Home';
 import Products from '../Screens/Products';
@@ -8,10 +8,31 @@ import Profile from '../Screens/Profile';
 import Images from '../Keys/Images';
 import { Image } from 'react-native';
 import ChatListing from '../Screens/ChatListing';
+import { gettingProductType } from '../Api';
+import { setProductType } from '../Redux/Reducers/userData';
+import { useDispatch } from 'react-redux';
 
 const Tab = createBottomTabNavigator();
 
 const BottomTabs = () => {
+  const dispatch = useDispatch();
+
+  const gettingDataProudctType = async () => {
+    try {
+      const res = await gettingProductType();
+      if (res?.status == 200) {
+        dispatch(setProductType(res?.data?.product_types))
+      } else {
+        dispatch(setProductType([]))
+      }
+    } catch (error) {
+      dispatch(setProductType([]))
+    }
+  }
+  useEffect(() => {
+    gettingDataProudctType();
+  }, [])
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -25,7 +46,7 @@ const BottomTabs = () => {
         component={Home}
         options={{
           tabBarIcon: ({ focused }) => (
-            <Image source={Images?.home} style={{width:20, height:20, tintColor : focused ? 'grey' : 'black'}} resizeMode={'contain'}/>
+            <Image source={Images?.home} style={{ width: 20, height: 20, tintColor: focused ? 'grey' : 'black' }} resizeMode={'contain'} />
           ),
         }}
       />
@@ -34,7 +55,7 @@ const BottomTabs = () => {
         component={Products}
         options={{
           tabBarIcon: ({ focused }) => (
-            <Image source={Images?.post} style={{width:20, height:20, tintColor : focused ? 'grey' : 'black'}} resizeMode={'contain'}/>
+            <Image source={Images?.post} style={{ width: 20, height: 20, tintColor: focused ? 'grey' : 'black' }} resizeMode={'contain'} />
           ),
         }}
       />
@@ -43,7 +64,7 @@ const BottomTabs = () => {
         component={ChatListing}
         options={{
           tabBarIcon: ({ focused }) => (
-           <Image source={Images?.chat} style={{width:20, height:20, tintColor : focused ? 'grey' : 'black'}} resizeMode={'contain'}/>
+            <Image source={Images?.chat} style={{ width: 20, height: 20, tintColor: focused ? 'grey' : 'black' }} resizeMode={'contain'} />
           ),
         }}
       />
@@ -52,7 +73,7 @@ const BottomTabs = () => {
         component={Profile}
         options={{
           tabBarIcon: ({ focused }) => (
-            <Image source={Images?.person} style={{width:20, height:20, tintColor : focused ? 'grey' : 'black'}} resizeMode={'contain'}/>
+            <Image source={Images?.person} style={{ width: 20, height: 20, tintColor: focused ? 'grey' : 'black' }} resizeMode={'contain'} />
           ),
         }}
       />
