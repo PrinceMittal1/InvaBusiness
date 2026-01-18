@@ -34,6 +34,7 @@
     "openai": "^5.12.2",
     "react": "19.0.0",
     "react-native": "0.78.0",
+    "react-native-compressor": "^1.16.0",
     "react-native-device-info": "^14.0.4",
     "react-native-fs": "^2.20.0",
     "react-native-image-crop-picker": "^0.50.1",

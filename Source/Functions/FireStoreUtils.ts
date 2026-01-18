@@ -4,6 +4,7 @@ import moment from "moment";
 import { Platform } from "react-native";
 import storage from '@react-native-firebase/storage';
 import RNFS from 'react-native-fs';
+import compressImage from "./compressing";
 
 export default function useFireStoreUtil() {
 
@@ -286,7 +287,7 @@ export default function useFireStoreUtil() {
 
     const uploadMediaToFirebase = async (data: any) => {
         try {
-            const uri = data;
+            const uri = await compressImage(data);
             if (!uri) throw new Error("No file URI");
             const fileName = `file_${Date.now()}.jpg`;
             const pathToFile = Platform.OS === 'ios' ? uri.replace('file://', '') : uri.replace('file://', '');

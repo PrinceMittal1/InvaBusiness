@@ -15,6 +15,7 @@ import AppFonts from '../Functions/Fonts';
 import Colors from '../Keys/colors';
 import { editProductApi, gettingProductTags, gettingProductType } from '../Api';
 import { setProductType } from '../Redux/Reducers/userData';
+import compressImage from '../Functions/compressing';
 
 
 const { width: screen_Width, height: screen_Height } = Dimensions.get('window')
@@ -217,7 +218,8 @@ const EditingProductModal = ({ data, onClosePress, callApiAgain }: any) => {
             for (const [index, image] of images1.entries()) {
                 const isFirebaseImage = !image?.path && image?.startsWith("https://firebasestorage.googleapis.com/v0/b/");
                 if (!isFirebaseImage) {
-                    const uploadedUrl = await uploadMediaToFirebase(image?.path, index + 1, images1.length);
+                    let imgPath = await compressImage(image?.path) 
+                    const uploadedUrl = await uploadMediaToFirebase(imgPath, index + 1, images1.length);
                     if (uploadedUrl) {
                         urlOfImages.push(uploadedUrl);
                     }

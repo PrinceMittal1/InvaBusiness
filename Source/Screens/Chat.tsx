@@ -13,6 +13,7 @@ import { setLoader } from "../Redux/Reducers/tempData";
 import RNFS from 'react-native-fs';
 import storage from '@react-native-firebase/storage';
 import FastImage from "@d11/react-native-fast-image";
+import compressImage from "../Functions/compressing";
 
 
 const PAGE_SIZE = 15;
@@ -135,7 +136,8 @@ const Chat = () => {
         try {
             let urlOfImages: string[] = [];
             for (const [index, image] of images1.entries()) {
-                const uploadedUrl = await uploadMediaToFirebase(image?.path, index + 1, images1.length);
+                let imgPath = await compressImage(image?.path) 
+                const uploadedUrl = await uploadMediaToFirebase(imgPath, index + 1, images1.length);
                 if (uploadedUrl) {
                     urlOfImages.push(uploadedUrl);
                 }

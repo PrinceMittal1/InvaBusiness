@@ -5,7 +5,6 @@ import {
   StyleSheet,
   Text,
   Pressable,
-  Image,
   TextInput,
   TouchableOpacity,
   Platform,
@@ -29,6 +28,7 @@ import BottomButton from "./BottomButton";
 import { setLoader } from "../Redux/Reducers/tempData";
 import Images from "../Keys/Images";
 import { setProductType } from "../Redux/Reducers/userData";
+import compressImage from "../Functions/compressing";
 
 interface props {
   cameraOnpress?: () => void;
@@ -109,7 +109,7 @@ const AddingProduct: React.FC<props> = ({
 
   const uploadMediaToFirebase = async (data: any, currentNumber: any, totalNumber: any) => {
     try {
-      const uri = data;
+      const uri = await compressImage(data);
       if (!uri) throw new Error("No file URI");
       const fileName = `file_${Date.now()}.jpg`;
       const pathToFile = Platform.OS === 'ios' ? uri.replace('file://', '') : uri.replace('file://', '');
@@ -179,7 +179,7 @@ const AddingProduct: React.FC<props> = ({
           sellerCity,
           sellerState,
           tags,
-          productType : productTypeTemp,
+          productType: productTypeTemp,
           price: Number(price.replace(/[^0-9.]/g, "")),
           images: urlOfImages
         });
@@ -252,7 +252,7 @@ const AddingProduct: React.FC<props> = ({
     <View style={styles.tagItem}>
       <Text style={styles.tagText}>{item}</Text>
       <Pressable onPress={() => removeItem(item)} style={styles.tagRemoveButton}>
-        <Image source={Images?.Cancel} style={styles.tagRemoveIcon} resizeMode="contain" />
+        <FastImage source={Images?.Cancel} style={styles.tagRemoveIcon} resizeMode="contain" />
       </Pressable>
     </View>
   );

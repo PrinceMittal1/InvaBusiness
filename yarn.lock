@@ -6476,6 +6476,11 @@ react-native-animatable@1.4.0:
   dependencies:
     prop-types "^15.8.1"
 
+react-native-compressor@^1.16.0:
+  version "1.16.0"
+  resolved "https://registry.yarnpkg.com/react-native-compressor/-/react-native-compressor-1.16.0.tgz#4c1dbad91f9bb33dd06292763da5ae3bdfbf3f87"
+  integrity sha512-yBJ1j/ank4Ckx/0cKf8QiK1oATppxN8GuNBoW6P83Os7s7MUdCLzVmIXX0ikkusdrgdCaetW6j3hH2eMI54pcw==
+
 react-native-device-info@^14.0.4:
   version "14.0.4"
   resolved "https://registry.npmjs.org/react-native-device-info/-/react-native-device-info-14.0.4.tgz"
