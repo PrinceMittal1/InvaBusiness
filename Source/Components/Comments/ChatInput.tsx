@@ -146,7 +146,7 @@ const ChatInput = ({ onPressAttachment, onPressSend, onWishlistClicked, allowedW
                 setVal(t)
               }}
               style={styles?.textInputForMessage}
-              placeholderTextColor={"white"}
+              placeholderTextColor={"black"}
               placeholder={"Message..."}
             />
             {onPressAttachment &&
@@ -172,7 +172,7 @@ const ChatInput = ({ onPressAttachment, onPressSend, onWishlistClicked, allowedW
             <Image
               source={Images.send}
               style={styles.sendIcon}
-              tintColor={'grey'}
+              tintColor={'white'}
               resizeMode="contain"
             />
           </Pressable>
@@ -194,7 +194,7 @@ const useStyles = () =>
       marginHorizontal: width * 0.05, marginTop: 5
     },
     textInputForMessage:{
-      padding: 0, fontSize: 12, color: 'white', width: "68%", height: "100%", marginLeft: 5
+      padding: 0, fontSize: 12, color: 'black', width: "68%", height: "100%", marginLeft: 5
     },
     wishlistContainerItemOuter: {
       marginRight: 5, borderRadius: 25, justifyContent: 'center', alignItems: 'center', padding: 0.6
@@ -222,7 +222,7 @@ const useStyles = () =>
     subView: {
       width: "86%",
       height: 40,
-      backgroundColor: 'grey',
+      backgroundColor: 'white',
       borderRadius: 100,
       borderWidth: 1,
       borderColor: 'grey',
@@ -259,6 +259,7 @@ const useStyles = () =>
       alignItems: "center",
       width: "100%",
       alignSelf: "center",
+      backgroundColor:'#e9aea0',
       justifyContent: "space-between",
       paddingHorizontal: 20,
       paddingVertical: 10

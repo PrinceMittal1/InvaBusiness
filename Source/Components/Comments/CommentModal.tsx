@@ -42,17 +42,16 @@ const CommentModal = ({ visible, onCrossPress, productId }: any) => {
     }
   }
 
-
   const addingComments = async (productId: string, comment: string) => {
-    console.log("adding commnets are ------ ", productId, "----", comment,"-----", user_id,"-----", userData?.businessName,"-----", userData?.profile_picture)
     const fireUtils = useFireStoreUtil();
-    const response = await fireUtils.addingCommentForTheProduct(productId, comment, user_id, userData?.businessName ?? "", userData?.profile_picture)
+    const response = await fireUtils.addingCommentForTheProduct(productId, comment, user_id, userData?.businessName ?? "", userData?.profile_picture ?? '')
     if (response?.state) {
       let obj = {
         userId: user_id,
         id: response.id,
         comment: comment,
         productId: productId,
+        sellerName : userData?.businessName ?? "",
         name: userData?.name ?? "",
         profile_picture: userData?.profile_picture,
         createdAt: moment().unix(),
@@ -220,10 +219,10 @@ const useStyles = () =>
       justifyContent: "space-between",
       paddingHorizontal: 2,
     },
-    count: { color: 'white' },
+    count: { color: 'black' },
     whiteView: {
       width: "100%",
-      backgroundColor: 'grey',
+      backgroundColor: '#FFF6F3',
       height: "56%",
       borderTopRightRadius: 20,
       borderTopLeftRadius: 20,

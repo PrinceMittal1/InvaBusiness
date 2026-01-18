@@ -8,7 +8,7 @@ import { hp, wp } from "../Keys/dimension";
 import { useNavigation } from "@react-navigation/native";
 import AppRoutes from "../Routes/AppRoutes";
 import { useDispatch, useSelector } from "react-redux";
-import { setUserId } from "../Redux/Reducers/userData";
+import { setUserData, setUserId } from "../Redux/Reducers/userData";
 import { setLoader } from "../Redux/Reducers/tempData";
 import Colors from "../Keys/colors";
 import AppFonts from "../Functions/Fonts";
@@ -41,10 +41,8 @@ const Login = () => {
             setLoader(false)
             return
         }
-        console.log("numbr is -- ", numberForLogin)
         try {
             const confirmation: any = await auth().signInWithPhoneNumber(`+91${numberForLogin}`);
-            console.log("numbr is -- confirmation", confirmation)
             navigation.navigate(AppRoutes?.VerificationScreen, { confimration: confirmation, phoneNumber: numberForLogin })
         } catch (error) {
             console.log('Phone Sign-In Error:', error);
@@ -75,8 +73,8 @@ const Login = () => {
                     if (res?.status == 201) {
                         dispatch(setUserId(res?.data?.user?._id));
                         navigation.replace(AppRoutes?.BottomBar);
-                    }
-                    if (res?.status == 200) {
+                        dispatch(setUserData(res?.data?.user))
+                    }else if (res?.status == 200) {
                         dispatch(setUserId(res?.data?.user?._id));
                         navigation.replace(AppRoutes?.ScreenForUserDetail);
                     }

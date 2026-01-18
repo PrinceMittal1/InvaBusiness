@@ -41,7 +41,7 @@ const Profile = () => {
         try {
             const res = await profileDetailApi({ user_id: user_id })
             if (res?.status == 200) {
-                setUserData(res?.data?.seller)
+                dispatch(setUserData(res?.data?.seller))
                 setProfileImage(res?.data?.seller?.profile_picture);
             }
         } catch (error) {
