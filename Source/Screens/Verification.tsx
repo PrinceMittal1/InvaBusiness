@@ -12,6 +12,7 @@ import { useDispatch } from "react-redux";
 import { setUserId } from "../Redux/Reducers/userData";
 import { creatingUserApi } from "../Api";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { showToast } from "../Functions/showToast";
 
 const VerificationScreen = () => {
     const insets = useSafeAreaInsets();
@@ -35,14 +36,14 @@ const VerificationScreen = () => {
                 phoneNumber: phoneNumber
             }
             const res : any = await creatingUserApi(data)
-            
             if(res?.status == 201){
                 dispatch(setUserId(res?.data?.user?._id));
                 navigation.navigate(AppRoutes?.BottomBar);
-            }
-            if (res?.status == 200) {
+            }else if (res?.status == 200) {
                 dispatch(setUserId(res?.data?.user?._id));
                 navigation.navigate(AppRoutes?.ScreenForUserDetail);
+            }else {
+                showToast("Title is required");
             }
         } catch (error) {
             console.log('Invalid code.', error);

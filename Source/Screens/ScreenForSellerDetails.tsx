@@ -106,7 +106,7 @@ const ScreenForUserDetails = () => {
         } catch (error) {
         }
     }
-
+    console.log("all busienss type is -", allBusinessType)
 
     useEffect(() => {
         gettingDataProudctType();
