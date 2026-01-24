@@ -131,7 +131,7 @@ const Profile = () => {
             }
             {
                 showLogoutPopUp &&
-                <LogoutConfirmation confimation={loggingOut} />
+                <LogoutConfirmation visible={showLogoutPopUp} confimation={loggingOut} onClosePress={() => setShowLogoutPopUp(false)} />
             }
         </>
     );

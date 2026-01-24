@@ -3,6 +3,7 @@ import '@react-native-firebase/app';
 import React, { useEffect } from 'react';
 import {
   Alert,
+  Linking,
   PermissionsAndroid,
   Platform,
   StyleSheet,
@@ -104,7 +105,28 @@ function App(): React.JSX.Element {
         // request permission
         const ok = await requestNotificationPermission();
         if (!ok) {
-          Alert.alert('Notifications disabled', 'User declined notification permission');
+          Alert.alert(
+            'You declined notification permission',
+            'To receive important updates, please enable notifications in your device settings.',
+            [
+              {
+                text: 'Cancel',
+                style: 'cancel',
+              },
+              {
+                text: 'Allow Notifications',
+                onPress: () => {
+                  // Open app settings
+                  if (Platform.OS === 'ios') {
+                    Linking.openURL('app-settings:');
+                  } else {
+                    Linking.openSettings();
+                  }
+                },
+              },
+            ]
+          );
+          return; // Exit early since permission is denied
         }
 
         // create default channel for android
@@ -116,13 +138,17 @@ function App(): React.JSX.Element {
 
         try {
           const token = await messaging().getToken();
-          const state : any = store.getState();
-          if (token && state?.userData?.userData?._id && state?.userData?.userData?._id?.length > 0) {
+          const state: any = store.getState();
+          if (
+            token &&
+            state?.userData?.userData?._id &&
+            state?.userData?.userData?._id?.length > 0
+          ) {
             let notification_token = token;
             let seller_id = state?.userData?.userData?._id;
             const res = await updatingFCM({
-              seller_id, 
-              notification_token
+              seller_id,
+              notification_token,
             });
           }
         } catch (err) {
@@ -131,13 +157,19 @@ function App(): React.JSX.Element {
 
         // foreground handler: show local notification and log payload
         unsubOnMessage = messaging().onMessage(async (remoteMessage) => {
-          console.log('FCM onMessage (foreground) FULL:', JSON.stringify(remoteMessage, null, 2));
+          console.log(
+            'FCM onMessage (foreground) FULL:',
+            JSON.stringify(remoteMessage, null, 2)
+          );
           await handleForegroundMessage(remoteMessage);
         });
 
         // background: user tapped notification while app was backgrounded
-        messaging().onNotificationOpenedApp(remoteMessage => {
-          console.log('onNotificationOpenedApp FULL (business):', JSON.stringify(remoteMessage, null, 2));
+        messaging().onNotificationOpenedApp((remoteMessage) => {
+          console.log(
+            'onNotificationOpenedApp FULL (business):',
+            JSON.stringify(remoteMessage, null, 2)
+          );
           const data = remoteMessage?.data ?? {};
           handleNotificationNavigationFromData(data);
         });
@@ -145,7 +177,10 @@ function App(): React.JSX.Element {
         // killed -> opened via notification
         const initialNotification = await messaging().getInitialNotification();
         if (initialNotification) {
-          console.log('getInitialNotification FULL (business):', JSON.stringify(initialNotification, null, 2));
+          console.log(
+            'getInitialNotification FULL (business):',
+            JSON.stringify(initialNotification, null, 2)
+          );
           // small delay to allow navigation to initialize
           setTimeout(() => {
             handleNotificationNavigationFromData(initialNotification.data ?? {});
@@ -155,7 +190,10 @@ function App(): React.JSX.Element {
         // Notifee foreground press listener
         notifeeForegroundUnsub = notifee.onForegroundEvent(({ type, detail }) => {
           if (type === NotifeeEventType.PRESS) {
-            console.log('Notifee PRESS event (business) FULL:', JSON.stringify(detail, null, 2));
+            console.log(
+              'Notifee PRESS event (business) FULL:',
+              JSON.stringify(detail, null, 2)
+            );
             const data = detail.notification?.data ?? {};
             handleNotificationNavigationFromData(data);
           }
@@ -164,9 +202,14 @@ function App(): React.JSX.Element {
         // Notifee initial (killed -> open via notifee)
         const initialNotifee = await notifee.getInitialNotification();
         if (initialNotifee?.notification) {
-          console.log('Notifee initial notification (business) FULL:', JSON.stringify(initialNotifee, null, 2));
+          console.log(
+            'Notifee initial notification (business) FULL:',
+            JSON.stringify(initialNotifee, null, 2)
+          );
           setTimeout(() => {
-            handleNotificationNavigationFromData(initialNotifee.notification.data ?? {});
+            handleNotificationNavigationFromData(
+              initialNotifee.notification.data ?? {}
+            );
           }, 500);
         }
       } catch (err) {

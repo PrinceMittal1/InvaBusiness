@@ -7,6 +7,9 @@ import keys from "../Routes/AppRoutes";
 import { useDispatch, useSelector } from "react-redux";
 import { setLoader } from "../Redux/Reducers/tempData";
 import { setUserId } from "../Redux/Reducers/userData";
+import FastImage from "@d11/react-native-fast-image";
+import Images from "../Keys/Images";
+import { wp } from "../Keys/dimension";
 
 const Splash = () => {
     const navigation = useNavigation();
@@ -21,8 +24,8 @@ const Splash = () => {
     }, [user_id])
 
     return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor:'white' }}>
+            <FastImage style={{width:wp(40), height:wp(40)}} source={Images?.logoForInva}/>
         </View>
     )
 }

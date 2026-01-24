@@ -120,7 +120,7 @@ const Home = () => {
                     fontFamily: AppFonts.Regular,
                   }}
                 >
-                  Add Post
+                  Add Product +
                 </Text>
               </Pressable>
             )
