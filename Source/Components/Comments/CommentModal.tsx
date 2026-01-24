@@ -78,10 +78,17 @@ const CommentModal = ({ visible, onCrossPress, productId }: any) => {
       setAllComments(prevComments =>
         prevComments.map(comment => {
           if (comment.id === parent_id) {
-            return {
-              ...comment,
-              replies: [commentData, ...(comment.replies || [])]
-            };
+            if (comment.replies?.length > 0) {
+              return {
+                ...comment,
+                replies: [commentData, ...comment.replies]
+              }
+            } else {
+              return {
+                ...comment,
+                replies: [commentData]
+              }
+            }
           }
           return comment;
         })
@@ -150,7 +157,7 @@ const CommentModal = ({ visible, onCrossPress, productId }: any) => {
               data={allComments}
               style={{ marginTop: 18 }}
               showsVerticalScrollIndicator={false}
-              keyExtractor={(item) => `${item?.id}`}
+              keyExtractor={(item) => `${item?.id}${item?.replies?.length}`}
               renderItem={({ item, index }: any) => {
                 return <CommentBlocks item={item} chatInputEnabledId={chatInputEnabledId} setChatInputEnabledIdfunc={setChatInputEnabledIdfunc} setChatInputEnabledFunc={setChatInputEnabledFunc} index={index} onCrossPress={onCrossPress} fetchingComments={fetchingComments} onReplyPress={onReplyPress} deletingComments={deletingComments} />;
               }}
